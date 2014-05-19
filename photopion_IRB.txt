@@ -1,5 +1,5 @@
-# Pion production rate for protons and neutrons on IRB
-# Energy [EeV], Rate [1/Mpc]
+# Pion production rate for protons and neutrons against the IRB (Kneiske et al. 2004)
+# Energy [EeV], rate (protons) [1/Mpc], rate (neutrons) [1/Mpc]
 0.144544 0.000001 0.000001
 0.158489 0.000001 0.000001
  0.17378 0.000002 0.000002

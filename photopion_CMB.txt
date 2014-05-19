@@ -1,5 +1,5 @@
-# Pion production rate for protons and neutrons on the CMB
-# Energy [EeV], Rate [1/Mpc]
+# Pion production rate for protons and neutrons against the CMB
+# Energy [EeV], rate (protons) [1/Mpc], rate (neutrons) [1/Mpc]
 27.8256 0.000002 0.000002
 30.5385 0.000014 0.000014
  33.516 0.000047 0.000047
