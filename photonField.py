@@ -5,6 +5,7 @@ cdir = path.split(__file__)[0]
 datadir = path.join(cdir, 'tables/')
 
 eV = 1.60217657e-19  # [J]
+erg = 1e-7  # [J]
 c0 = 299792458  # [m/s]
 h = 6.62606957e-34  # [m^2 kg / s]
 kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
@@ -154,6 +155,22 @@ class EBL_Stecker05(EBL):
             # convert n(eps) to comoving density
             self.data[z] = eps, n[i] / (1+z)**3
 
+class EBL_Finke10(EBL):
+    name = 'IRB_Finke10'
+    info = 'cosmic infrared and optical background radiation model of Finke et al. 2010 (Model C)'
+    files = datadir+'IRO_Finke10/z%.2f.dat'
+    redshift = np.arange(0, 5, 0.01)
+
+    def __init__(self):
+        EBL.__init__(self)
+        for z in self.redshift:
+            # d[0] : eps / eV
+            # d[1] : comoving energy density in erg / cm^3
+            d = genfromtxt(self.files % z, unpack=True)
+            eps = d[0] * eV
+            n   = d[1] * erg * 1e6 / eps**2 # [J/m^3]
+            self.data[z] = eps, n
+
 class CRB_Biermann96(EBL):
     name = 'URB_Biermann96'
     info = 'cosmic radio background radiation model of Biermann et al. 1996'
@@ -197,6 +214,7 @@ if __name__ == '__main__':
     ebl3 = EBL_Stecker05()
     ebl4 = EBL_Dole06()
     ebl5 = EBL_Franceschini08()
+    ebl6 = EBL_Finke10()
 
     figure()
     plot(eps/eV, ebl1.getDensity(eps), label="Kneiske '04")
@@ -204,6 +222,7 @@ if __name__ == '__main__':
     plot(eps/eV, ebl3.getDensity(eps), label="Stecker '05")
     plot(eps/eV, ebl4.getDensity(eps), label="Dole '06")
     plot(eps/eV, ebl5.getDensity(eps), label="Franceschini '08")
+    plot(eps/eV, ebl6.getDensity(eps), label="Finke '10")
     legend(loc='lower left')
     loglog()
     ylabel('$dn / d\epsilon$ [1/m$^3$/J]')
