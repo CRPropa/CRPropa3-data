@@ -43,8 +43,9 @@ class EBL:
 
     def getDensity(self, eps, z=0):
         """
-        Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J] and redshift z.
-        Multiply with (1+z)^3 for the physical number density.
+        Comoving spectral number density dn/deps [1/m^3/J]
+        at given photon energy eps [J] and redshift z.
+        Multiply with (1+z)^3 for the physical spectral number density.
         """
         eps_data, n_data = self.data[z]
         return np.interp(eps, eps_data, n_data, 0, 0)
@@ -56,6 +57,7 @@ class EBL:
     def getEmax(self, z=0):
         """Maximum tabulated photon energy in [J]"""
         return self.data[z][0][-1]
+
 
 class EBL_Kneiske04(EBL):
     name = 'IRB_Kneiske04'
@@ -171,6 +173,23 @@ class EBL_Finke10(EBL):
             n   = d[1] * erg * 1e6 / eps**2 # [J/m^3]
             self.data[z] = eps, n
 
+class EBL_Gilmore12(EBL):
+    name = 'IRB_Gilmore12'
+    info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (arXiv:1104.0671)'
+    files = datadir+'IRO_Gilmore12/eblflux_fiducial.dat'
+    redshift = np.array([0, 0.015, 0.025, 0.044, 0.05, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0])
+
+    def __init__(self):
+        EBL.__init__(self)
+        # d[0] : rest frame wavelength in [angstrom]
+        # d[1-21] : proper flux [erg/s/cm^2/ang/sr]
+        d = np.genfromtxt(self.files, unpack=True)
+        eps = h * c0 / (d[0] * 1e-10)  # [J]
+        n = d[1:] * 1e-7 / c0 / 1e-4 * d[0] * 4*np.pi / eps**2
+        for i,z in enumerate(self.redshift):
+            self.data[z] = eps[::-1], n[i][::-1]
+
+
 class CRB_Biermann96(EBL):
     name = 'URB_Biermann96'
     info = 'cosmic radio background radiation model of Biermann et al. 1996'
@@ -215,17 +234,19 @@ if __name__ == '__main__':
     ebl4 = EBL_Dole06()
     ebl5 = EBL_Franceschini08()
     ebl6 = EBL_Finke10()
+    ebl7 = EBL_Gilmore12()
 
     figure()
-    plot(eps/eV, ebl1.getDensity(eps), label="Kneiske '04")
-    plot(eps/eV, ebl2.getDensity(eps), label="Kneiske '10 (lower limit)")
-    plot(eps/eV, ebl3.getDensity(eps), label="Stecker '05")
-    plot(eps/eV, ebl4.getDensity(eps), label="Dole '06")
-    plot(eps/eV, ebl5.getDensity(eps), label="Franceschini '08")
-    plot(eps/eV, ebl6.getDensity(eps), label="Finke '10")
+    plot(eps/eV, ebl1.getDensity(eps)*eps, label="Kneiske '04")
+    plot(eps/eV, ebl2.getDensity(eps)*eps, label="Kneiske '10 (lower limit)")
+    plot(eps/eV, ebl3.getDensity(eps)*eps, label="Stecker '05")
+    plot(eps/eV, ebl4.getDensity(eps)*eps, label="Dole '06")
+    plot(eps/eV, ebl5.getDensity(eps)*eps, label="Franceschini '08")
+    plot(eps/eV, ebl6.getDensity(eps)*eps, label="Finke '10")
+    plot(eps/eV, ebl7.getDensity(eps)*eps, label="Gilmore '12")
     legend(loc='lower left')
     loglog()
-    ylabel('$dn / d\epsilon$ [1/m$^3$/J]')
+    ylabel('$n(\epsilon)$ [1/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('IRO.png')
     show()
