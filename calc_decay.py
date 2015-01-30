@@ -1,10 +1,11 @@
 from numpy import *
-import crpropa
+import crpropa as crp
+from scipy.integrate import quad
 
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # See http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp
 # Query settings:
-# Z: 0-36, output: formatted file
+# Z: 0-26, output: formatted file
 
 class Decay:
     def __init__(self):
@@ -28,7 +29,7 @@ class Decay:
         elif s == '':
             self.tau = 0
         else:
-            self.tau = float(s) / log(2)
+            self.tau = float(s) / log(2)  # half-life --> life time
 
         # mode
         self.mode = l[12].strip()
@@ -39,7 +40,7 @@ class Decay:
         if s == '':
             self.br = 0.
         else:
-            self.br = float(s) / 100.
+            self.br = float(s) / 100.  # % --> fraction
 
     def isStable(self):
         return self.tau == inf
@@ -54,7 +55,7 @@ class Decay:
 ### parse data file
 print '\nParsing data file'
 print '-------------------------------------'
-fin = open('NuDat2.txt','r')
+fin = open('tables/decay_NuDat2.txt')
 lines = fin.readlines()
 fin.close()
 
@@ -190,28 +191,26 @@ for z in range(27):
 
 
 ### correct for electron capture contribution in beta+ decays
+# see Basdevant, Fundamentals in Nuclear Physics, 4.3.2 and 4.3.3
 print '\nBeta+ correction'
 print '-------------------------------------'
-a0 = 5.29177e-11 # Bohr radius [m]
-a0 /= crpropa.c_light * (crpropa.h_planck / 2 / pi) / crpropa.eplus # convert to [1/eV]
-Qe = crpropa.mass_electron * crpropa.c_squared / crpropa.eV # [eV]
+Qe = crp.mass_electron * crp.c_squared  # electron energy [J]
+a0 = 5.29177e-11  # Bohr radius [m]
+hbar_c = crp.c_light * (crp.h_planck / 2 / pi)  # [m/J]
 
-def I1(Q):
-    x = Q / Qe
-    return Qe**5 * ((2*x**4 - 9*x**2 - 8) * sqrt(x**2-1) + x*log(x+sqrt(x**2-1))) / 15
-
-for z in range(27):
-    for n in range(31):
-        for d in decayTable[z][n]:
+for Z in range(27):
+    for N in range(31):
+        for d in decayTable[Z][N]:
             if not(d.isBetaPlus()):
                 continue
 
-            m1 = crpropa.getNucleusMass(crpropa.getNucleusId(z+n, z))
-            m2 = crpropa.getNucleusMass(crpropa.getNucleusId(z+n, z - 1))
-            Q = (m1 - m2) * crpropa.c_squared / crpropa.eV
+            A  = Z+N
+            m1 = crp.nuclearMass(A, Z)
+            m2 = crp.nuclearMass(A, Z-1)
+            dm = (m1 - m2) * crp.c_squared
 
-            Qbeta = (Q - Qe) # [eV]
-            Qec = (Q + Qe) # [eV]
+            Qec   = (dm + Qe)
+            Qbeta = (dm - Qe)
 
             # check if energetically possible
             if Qbeta < 0:
@@ -219,10 +218,14 @@ for z in range(27):
                 d.tau = inf
                 continue
 
-            # see Basdevant, Fundamentals in Nuclear Physics, 4.3.2 and 4.3.3
+            f = lambda E: E * sqrt(E**2 - Qe**2) * (dm - E)**2
+            I, Ierr = quad(f, Qe, dm)
+
             # ratio tau_beta+ / tau_ec
-#           f = 2 / pi**2 * (z/a0)**3 * Qec**2 / Q**5 * 30
-            f = 2 / pi**2 * (z/a0)**3 * Qec**2 / I1(Q)
+            f = pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
+            if f < 0:
+                print Qec
+                print I1(Q/Qe)
             print d, ' <- beta+ correction %.1e'%f
             d.tau *= 1 + f
 
