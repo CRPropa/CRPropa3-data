@@ -12,6 +12,7 @@ kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
 T_CMB = 2.72548  # CMB temperature [K]
 
 
+# interfaces
 class CMB:
     """
     Cosmic microwave background radiation
@@ -59,6 +60,7 @@ class EBL:
         return self.data[z][0][-1]
 
 
+# EBL (optical and infrared) models
 class EBL_Kneiske04(EBL):
     name = 'IRB_Kneiske04'
     info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
@@ -121,7 +123,7 @@ class EBL_Dole06(EBL):
         # d[1] : n(eps), [W/m^2/sr]
         d = np.genfromtxt(self.files, unpack=True)
         eps = h * c0 / (d[0] * 1e-6)  # photon energy [J]
-        n = d[1] * 4 * np.pi / c0 / eps**2
+        n = d[1] * 4*np.pi / c0 / eps**2
         self.data[0] = eps[::-1], n[::-1]
 
 class EBL_Franceschini08(EBL):
@@ -189,7 +191,56 @@ class EBL_Gilmore12(EBL):
         for i,z in enumerate(self.redshift):
             self.data[z] = eps[::-1], n[i][::-1]
 
+class EBL_Dominguez11(EBL):
+    name = 'IRB_Dominguez11'
+    info = 'cosmic infrared and optical background radiation model of Dominguez et al. 2011 (arXiv:1007.1459)'
+    files = datadir+'IRO_Dominguez11/ebl_dominguez11.out'
+    redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
 
+    def __init__(self):
+        EBL.__init__(self)
+        # d[0] : rest frame wavelength in [mu m]
+        # d[1-18] : proper flux [nW/m^2/sr]
+        d = np.genfromtxt(self.files, unpack=True)
+        eps = h * c0 / (d[0] * 1e-6)  # [J]
+        n = d[1:] * 1e-9 / c0 * 4*np.pi / eps**2
+        for i,z in enumerate(self.redshift):
+            self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
+
+class EBL_Dominguez11_upper(EBL):
+    name = 'IRB_Dominguez11_upper'
+    info = 'cosmic infrared and optical background radiation model of Dominguez et al. 2011 (arXiv:1007.1459)'
+    files = datadir+'IRO_Dominguez11/ebl_upper_uncertainties_dominguez11.out'
+    redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
+
+    def __init__(self):
+        EBL.__init__(self)
+        # d[0] : rest frame wavelength in [mu m]
+        # d[1-18] : proper flux [nW/m^2/sr]
+        d = np.genfromtxt(self.files, unpack=True)
+        eps = h * c0 / (d[0] * 1e-6)  # [J]
+        n = d[1:] * 1e-9 / c0 * 4*np.pi / eps**2
+        for i,z in enumerate(self.redshift):
+            self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
+
+class EBL_Dominguez11_lower(EBL):
+    name = 'IRB_Dominguez11_lower'
+    info = 'cosmic infrared and optical background radiation model of Dominguez et al. 2011 (arXiv:1007.1459)'
+    files = datadir+'IRO_Dominguez11/ebl_lower_uncertainties_dominguez11.out'
+    redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
+
+    def __init__(self):
+        EBL.__init__(self)
+        # d[0] : rest frame wavelength in [mu m]
+        # d[1-18] : proper flux [nW/m^2/sr]
+        d = np.genfromtxt(self.files, unpack=True)
+        eps = h * c0 / (d[0] * 1e-6)  # [J]
+        n = d[1:] * 1e-9 / c0 * 4*np.pi / eps**2
+        for i,z in enumerate(self.redshift):
+            self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
+
+
+# CRB (radio) models
 class CRB_Biermann96(EBL):
     name = 'URB_Biermann96'
     info = 'cosmic radio background radiation model of Biermann et al. 1996'
@@ -227,28 +278,38 @@ class CRB_ARCADE2:
 
 if __name__ == '__main__':
     from pylab import *
-    eps = logspace(-3, 1, 100) * eV
-    ebl1 = EBL_Kneiske04()
-    ebl2 = EBL_Kneiske10()
-    ebl3 = EBL_Stecker05()
-    ebl4 = EBL_Dole06()
-    ebl5 = EBL_Franceschini08()
-    ebl6 = EBL_Finke10()
-    ebl7 = EBL_Gilmore12()
+    eps = logspace(-3, 1, 200) * eV
+    x  = eps / eV
+    y1 = EBL_Kneiske04().getDensity(eps) * eps
+    y2 = EBL_Kneiske10().getDensity(eps) * eps
+    y3 = EBL_Stecker05().getDensity(eps) * eps
+    y4 = EBL_Dole06().getDensity(eps) * eps
+    y5 = EBL_Franceschini08().getDensity(eps) * eps
+    y6 = EBL_Finke10().getDensity(eps) * eps
+    y7 = EBL_Gilmore12().getDensity(eps) * eps
+    y8 = EBL_Dominguez11().getDensity(eps) * eps
 
     figure()
-    plot(eps/eV, ebl1.getDensity(eps)*eps, label="Kneiske '04")
-    plot(eps/eV, ebl2.getDensity(eps)*eps, label="Kneiske '10 (lower limit)")
-    plot(eps/eV, ebl3.getDensity(eps)*eps, label="Stecker '05")
-    plot(eps/eV, ebl4.getDensity(eps)*eps, label="Dole '06")
-    plot(eps/eV, ebl5.getDensity(eps)*eps, label="Franceschini '08")
-    plot(eps/eV, ebl6.getDensity(eps)*eps, label="Finke '10")
-    plot(eps/eV, ebl7.getDensity(eps)*eps, label="Gilmore '12")
+    plot(x, y1, label="Kneiske '04")
+    plot(x, y2, label="Kneiske '10 (lower limit)")
+    # plot(x, y3, label="Stecker '05")
+    plot(x, y4, label="Dole '06")
+    plot(x, y5, label="Franceschini '08")
+    plot(x, y6, label="Finke '10")
+    plot(x, y7, label="Gilmore '12")
+    plot(x, y8, label="Dominguez '11")
     legend(loc='lower left')
     loglog()
     ylabel('$n(\epsilon)$ [1/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('IRO.png')
+
+    figure()
+    upper = EBL_Dominguez11_upper().getDensity(eps) * eps
+    lower = EBL_Dominguez11_lower().getDensity(eps) * eps
+    fill_between(x, lower, upper, edgecolor='none', facecolor='grey')
+    plot(x, y8, label="Dominguez '11", color='black')
+    loglog()
+    ylabel('$n(\epsilon)$ [1/m$^3$]')
+    xlabel('$\epsilon$ [eV]')
     show()
-
-
