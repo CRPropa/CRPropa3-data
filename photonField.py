@@ -40,16 +40,16 @@ class EBL:
     Base class for extragalactic background light (EBL) models
     """
     def __init__(self):
-        self.data = {}  # dictionary (redshift : spectrum)
+        self.data = {}  # dictionary {redshift : (eps, dn/deps)}
 
     def getDensity(self, eps, z=0):
         """
-        Comoving spectral number density dn/deps [1/m^3/J]
-        at given photon energy eps [J] and redshift z.
+        Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J] and redshift z.
         Multiply with (1+z)^3 for the physical spectral number density.
+        The tabulated data is interpolated linearly in log-log; no extrapolation is performed.
         """
-        eps_data, n_data = self.data[z]
-        return np.interp(eps, eps_data, n_data, 0, 0)
+        tab_eps, tab_n = self.data[z]
+        return 10**np.interp(log10(eps), log10(tab_eps), log10(tab_n), -inf, -inf)
 
     def getEmin(self, z=0):
         """Minimum tabulated photon energy in [J]"""
@@ -142,10 +142,10 @@ class EBL_Franceschini08(EBL):
             n = 10**y / eps * 1e6
             self.data[z] = eps, n
 
-class EBL_Stecker05(EBL):
+class EBL_Stecker05_old(EBL):
     name = 'IRB_Stecker05'
     info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
-    files = datadir+'IRO_Stecker05/z0'
+    files = datadir+'IRO_Stecker05/data1.txt'
     redshift = np.linspace(0, 5, 26)
 
     def __init__(self):
@@ -155,6 +155,23 @@ class EBL_Stecker05(EBL):
         d = np.genfromtxt(self.files, unpack=True)
         eps = 10**d[0] * h
         n = d[1:] / eps
+        for i,z in enumerate(self.redshift):
+            # convert n(eps) to comoving density
+            self.data[z] = eps, n[i] / (1+z)**3
+
+class EBL_Stecker05(EBL):
+    name = 'IRB_Stecker05'
+    info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
+    files = datadir+'IRO_Stecker05/data2.txt'
+    redshift = np.linspace(0, 5, 26)
+
+    def __init__(self):
+        EBL.__init__(self)
+        # d[0] : log10(eps/eV)
+        # d[1-26] : log10(eps*n(eps)/cm^3), not comoving
+        d = np.genfromtxt(self.files, unpack=True)
+        eps = 10**d[0] * eV
+        n = 10**d[1:] / eps * 1e6
         for i,z in enumerate(self.redshift):
             # convert n(eps) to comoving density
             self.data[z] = eps, n[i] / (1+z)**3
@@ -291,8 +308,8 @@ if __name__ == '__main__':
 
     figure()
     plot(x, y1, label="Kneiske '04")
-    plot(x, y2, label="Kneiske '10 (lower limit)")
-    # plot(x, y3, label="Stecker '05")
+    # plot(x, y2, label="Kneiske '10 (lower limit)")
+    plot(x, y3, label="Stecker '05")
     plot(x, y4, label="Dole '06")
     plot(x, y5, label="Franceschini '08")
     plot(x, y6, label="Finke '10")
@@ -300,16 +317,17 @@ if __name__ == '__main__':
     plot(x, y8, label="Dominguez '11")
     legend(loc='lower left')
     loglog()
-    ylabel('$n(\epsilon)$ [1/m$^3$]')
+    ylim(1e1, 1e6)
+    ylabel('$\epsilon ~ dn/d\epsilon$ [1/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('IRO.png')
 
-    figure()
-    upper = EBL_Dominguez11_upper().getDensity(eps) * eps
-    lower = EBL_Dominguez11_lower().getDensity(eps) * eps
-    fill_between(x, lower, upper, edgecolor='none', facecolor='grey')
-    plot(x, y8, label="Dominguez '11", color='black')
-    loglog()
-    ylabel('$n(\epsilon)$ [1/m$^3$]')
-    xlabel('$\epsilon$ [eV]')
-    show()
+    # figure()
+    # upper = EBL_Dominguez11_upper().getDensity(eps) * eps
+    # lower = EBL_Dominguez11_lower().getDensity(eps) * eps
+    # fill_between(x, lower, upper, edgecolor='none', facecolor='grey')
+    # plot(x, y8, label="Dominguez '11", color='black')
+    # loglog()
+    # ylabel('$n(\epsilon)$ [1/m$^3$]')
+    # xlabel('$\epsilon$ [eV]')
+    # show()
