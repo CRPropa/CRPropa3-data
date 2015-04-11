@@ -140,9 +140,11 @@ class EBL_Franceschini08(EBL):
             x, y = np.genfromtxt(self.files%z, unpack=True)
             eps = 10**x * eV
             n = 10**y / eps * 1e6
+            n /= (1 + z)**3  # make comoving
             self.data[z] = eps, n
 
 class EBL_Stecker05_old(EBL):
+    # data file obtained from O. Kalashevs propation code, "does not include UV part"
     name = 'IRB_Stecker05'
     info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
     files = datadir+'IRO_Stecker05/data1.txt'
@@ -187,7 +189,7 @@ class EBL_Finke10(EBL):
         for z in self.redshift:
             # d[0] : eps / eV
             # d[1] : comoving energy density in erg / cm^3
-            d = genfromtxt(self.files % z, unpack=True)
+            d = np.genfromtxt(self.files % z, unpack=True)
             eps = d[0] * eV
             n   = d[1] * erg * 1e6 / eps**2 # [J/m^3]
             self.data[z] = eps, n
@@ -206,6 +208,7 @@ class EBL_Gilmore12(EBL):
         eps = h * c0 / (d[0] * 1e-10)  # [J]
         n = d[1:] * 1e-7 / c0 / 1e-4 * d[0] * 4*np.pi / eps**2
         for i,z in enumerate(self.redshift):
+            n[i] /= (1 + z)**3  # make comoving
             self.data[z] = eps[::-1], n[i][::-1]
 
 class EBL_Dominguez11(EBL):
@@ -303,8 +306,8 @@ if __name__ == '__main__':
     y4 = EBL_Dole06().getDensity(eps) * eps
     y5 = EBL_Franceschini08().getDensity(eps) * eps
     y6 = EBL_Finke10().getDensity(eps) * eps
-    y7 = EBL_Gilmore12().getDensity(eps) * eps
-    y8 = EBL_Dominguez11().getDensity(eps) * eps
+    y7 = EBL_Dominguez11().getDensity(eps) * eps
+    y8 = EBL_Gilmore12().getDensity(eps) * eps
 
     figure()
     plot(x, y1, label="Kneiske '04")
@@ -313,14 +316,14 @@ if __name__ == '__main__':
     plot(x, y4, label="Dole '06")
     plot(x, y5, label="Franceschini '08")
     plot(x, y6, label="Finke '10")
-    plot(x, y7, label="Gilmore '12")
-    plot(x, y8, label="Dominguez '11")
+    plot(x, y7, label="Dominguez '11")
+    plot(x, y8, label="Gilmore '12")
     legend(loc='lower left')
     loglog()
     ylim(1e1, 1e6)
     ylabel('$\epsilon ~ dn/d\epsilon$ [1/m$^3$]')
     xlabel('$\epsilon$ [eV]')
-    savefig('IRO.png')
+    savefig('figures/IRO.png')
 
     # figure()
     # upper = EBL_Dominguez11_upper().getDensity(eps) * eps
