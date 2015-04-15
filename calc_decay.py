@@ -8,9 +8,6 @@ from scipy.integrate import quad
 # Z: 0-26, output: formatted file
 
 class Decay:
-    def __init__(self):
-        pass
-
     def __repr__(self):
         return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f'%(self.Z, self.N, self.mode, self.tau, self.br)
 
@@ -230,9 +227,8 @@ for Z in range(27):
             d.tau *= 1 + f
 
 
-### set proton / neutron dripping with very short life time for all other isotopes
+### set immediate proton / neutron dripping for all other isotopes
 print '\n\nSet proton / neutron dripping for all other isotopes'
-print '-------------------------------------'
 for z in range(0,27):
     for n in range(0,31):
         if (z + n)==0:
@@ -256,9 +252,7 @@ for z in range(0,27):
         dList.append(d)
 
 
-### write to file
-print '\n\nWrite to file'
-print '-------------------------------------'
+### save decay table
 fout = open('data/nuclear_decay.txt','w')
 fout.write('# Z, N, Mean Life Time [s], Decay Mode (#beta- #beta+ #alpha #p #n), dE\n')
 
@@ -299,5 +293,21 @@ for z in range(0,27):
             fout.write('%i %i %s %e\n'%(d.Z, d.N, modeDict[d.mode], d.tau))
 
 fout.close()
-print 'done'
 
+
+### save isotopes with tau > 1s to consider for photo-disintegration
+fout = open('isotopes.txt', 'w')
+fout.write('#Z\tN\tA\n')
+for z in range(1,27):
+    for n in range(1,31):
+        if (z + n)==0:
+            continue
+
+        c = 0  # total decay constant
+        for d in decayTable[z][n]:
+            c += 1 / d.tau
+
+        if c < 1:  # lifetime > 1s
+            fout.write('%i\t%i\t%i\n' % (z, n, z+n))
+
+fout.close()
