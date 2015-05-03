@@ -1,4 +1,4 @@
-Photodisintegration cross sections for isotopes with A<12 (except for Li-6) from various references.
+Photodisintegration cross sections for isotopes with A<12 from various references.
 The selection of cross sections is briefly described in [1] and in more detail in [2].
 
 
@@ -6,14 +6,15 @@ Overview:
 - H-2, H-3, He-3, He-4, Be-9 from [3]
     The cross sections for H-3 and He-3 are scaled by 1.7 and 0.66 (cf. [2], page 84; page 125 contains a typo)
     For Be-9 the parametrization is refitted to data (cf. [2] page 85, figure 3.2)
-
 - Li-8, Be-7, Be-10, Be-11, B-8, B-10, B-11, C-10, C-11 from [4]
     The loss of one proton (neutron) is assumed if the neutron number N < Z (N > Z).
     For N = Z the loss of one neutron or proton is modeled with equal probability.
-
 - Li-7 from interpolation of experimental data [6,7]
 
-- The isotopes He-6 and Li-9, which are present in the CRPropa 2.0 release were removed, because the life-time is smaller than 1.2 seconds, rendering photonuclear interactions negligible
+
+Changes:
+- He-6 and Li-9, which are present in the CRPropa 2.0 release were removed, because the life-time is smaller than 1.2 seconds, rendering photonuclear interactions negligible
+- Li-6 is now also taken from [4] instead of from TALYS, modeling the loss of protons and neutrons with equal probability
 
 
 Contents:
