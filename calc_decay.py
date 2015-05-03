@@ -295,7 +295,7 @@ for z in range(0,27):
 fout.close()
 
 
-### save isotopes with tau > 1s to consider for photo-disintegration
+### save isotopes with tau > 1.2 s to consider for photo-disintegration
 fout = open('isotopes.txt', 'w')
 fout.write('#Z\tN\tA\n')
 for z in range(1,27):
@@ -307,7 +307,7 @@ for z in range(1,27):
         for d in decayTable[z][n]:
             c += 1 / d.tau
 
-        if c < 1:  # lifetime > 1s
+        if c < 1.2:
             fout.write('%i\t%i\t%i\n' % (z, n, z+n))
 
 fout.close()
