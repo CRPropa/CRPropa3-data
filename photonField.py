@@ -49,7 +49,11 @@ class EBL:
         The tabulated data is interpolated linearly in log-log; no extrapolation is performed.
         """
         tab_eps, tab_n = self.data[z]
-        return 10**np.interp(log10(eps), log10(tab_eps), log10(tab_n), -inf, -inf)
+        # return np.interp(eps, tab_eps, tab_n, 0, 0)  # linear interpolation
+        x  = np.log10(eps)
+        tx = np.log10(tab_eps)
+        ty = np.log10(tab_n)
+        return 10**np.interp(x, tx, ty, -np.inf, -np.inf)  # log-log interpolation
 
     def getEmin(self, z=0):
         """Minimum tabulated photon energy in [J]"""
@@ -196,7 +200,7 @@ class EBL_Finke10(EBL):
 
 class EBL_Gilmore12(EBL):
     name = 'IRB_Gilmore12'
-    info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (arXiv:1104.0671)'
+    info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (Evolving dust model, arXiv:1104.0671)'
     files = datadir+'IRO_Gilmore12/eblflux_fiducial.dat'
     redshift = np.array([0, 0.015, 0.025, 0.044, 0.05, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0])
 
@@ -313,7 +317,7 @@ if __name__ == '__main__':
     plot(x, y1, label="Kneiske '04")
     # plot(x, y2, label="Kneiske '10 (lower limit)")
     plot(x, y3, label="Stecker '05")
-    plot(x, y4, label="Dole '06")
+    # plot(x, y4, label="Dole '06")
     plot(x, y5, label="Franceschini '08")
     plot(x, y6, label="Finke '10")
     plot(x, y7, label="Dominguez '11")
