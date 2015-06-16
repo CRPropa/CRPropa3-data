@@ -5,7 +5,7 @@ isotopes = genfromtxt('isotopes.txt', dtype=int)
 
 
 # 1) collect all exclusive cross sections
-f1 = open('xs.txt', 'w')
+f1 = open('xs_excl.txt', 'w')
 f1.write('# Z\tN\tchannel\txs [mb]\n')
 fmt1 = '%i\t%i\t%s' + '\t%.4g'*500 + '\n'  # output format
 
@@ -25,7 +25,7 @@ f1.close()
 
 
 # 2) sum up exclusive cross sections
-d = genfromtxt('xs.txt')
+d = genfromtxt('xs_excl.txt')
 
 f2 = open('xs_sum.txt', 'w')
 f2.write('# Z\tN\txs [mb]\n')
