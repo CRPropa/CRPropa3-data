@@ -85,12 +85,11 @@ fname = 'data/epp_%s.txt'
 fields = [
     photonField.CMB(),
     photonField.EBL_Kneiske04(),
-    photonField.EBL_Kneiske10(),
     photonField.EBL_Stecker05(),
-    photonField.EBL_Dole06(),
     photonField.EBL_Franceschini08(),
-    photonField.CRB_Biermann96()
-    ]
+    photonField.EBL_Finke10(),
+    photonField.EBL_Dominguez11(),
+    photonField.EBL_Gilmore12()]
 
 for field in fields:
     print field.name

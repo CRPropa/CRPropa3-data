@@ -305,22 +305,21 @@ if __name__ == '__main__':
     eps = logspace(-3, 1, 200) * eV
     x  = eps / eV
     y1 = EBL_Kneiske04().getDensity(eps) * eps
-    y2 = EBL_Kneiske10().getDensity(eps) * eps
     y3 = EBL_Stecker05().getDensity(eps) * eps
-    y4 = EBL_Dole06().getDensity(eps) * eps
     y5 = EBL_Franceschini08().getDensity(eps) * eps
     y6 = EBL_Finke10().getDensity(eps) * eps
     y7 = EBL_Dominguez11().getDensity(eps) * eps
     y8 = EBL_Gilmore12().getDensity(eps) * eps
+    upper = EBL_Dominguez11_upper().getDensity(eps) * eps
+    lower = EBL_Dominguez11_lower().getDensity(eps) * eps
 
     figure()
     plot(x, y1, label="Kneiske '04")
-    # plot(x, y2, label="Kneiske '10 (lower limit)")
     plot(x, y3, label="Stecker '05")
-    # plot(x, y4, label="Dole '06")
     plot(x, y5, label="Franceschini '08")
     plot(x, y6, label="Finke '10")
-    plot(x, y7, label="Dominguez '11")
+    plot(x, y7, 'k', label="Dominguez '11")
+    fill_between(x, lower, upper, edgecolor='none', facecolor='grey')
     plot(x, y8, label="Gilmore '12")
     legend(loc='lower left')
     loglog()
@@ -328,13 +327,3 @@ if __name__ == '__main__':
     ylabel('$\epsilon ~ dn/d\epsilon$ [1/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('figures/IRO.png')
-
-    # figure()
-    # upper = EBL_Dominguez11_upper().getDensity(eps) * eps
-    # lower = EBL_Dominguez11_lower().getDensity(eps) * eps
-    # fill_between(x, lower, upper, edgecolor='none', facecolor='grey')
-    # plot(x, y8, label="Dominguez '11", color='black')
-    # loglog()
-    # ylabel('$n(\epsilon)$ [1/m$^3$]')
-    # xlabel('$\epsilon$ [eV]')
-    # show()
