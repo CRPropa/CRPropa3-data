@@ -26,7 +26,7 @@ def isBogus(Z, N, channel):
 
 fexcl = open('xs_excl.txt', 'w')
 fexcl.write('# Z\tN\tchannel\txs\n')
-fexcl.write('#cross sections [mb] for incident photon energies eps = 10^5 - 10^8.992 eV\n')
+fexcl.write('#cross sections [mb] for incident photon energies eps = 0.2 - 200 MeV in steps of logE = 0.01\n')
 fmt = '%i\t%i\t%s' + '\t%.4g'*301 + '\n'  # output format
 
 isotopes = genfromtxt('isotopes.txt', dtype=int)
