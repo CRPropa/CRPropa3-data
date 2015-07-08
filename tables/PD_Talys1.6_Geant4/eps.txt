@@ -1,3 +1,4 @@
+# tabulated photon energies [MeV]
 0.2
 0.204659
 0.209426
