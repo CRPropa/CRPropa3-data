@@ -66,6 +66,27 @@ def invMFP_fast(eps, xs, gamma, field):
     return integrate.romb(n * F, dx=dx) * Mpc / gamma
 
 
+def rate(s_kin, xs, E,field):
+    """
+    Calculate interaction rate against an isotropic photon background
+    for given tabulated cross sections.
+    1/lambda = 1/(2E) * \int n((smax-m^2)/(4E)) / (smax-m^2) F(smax-m^2) dln(smax-m^2)
+    F(smax-m^2) = \int_{smin-m^2}^{smax-m^2} sigma(s) (s - m^2) d(s-m^2)
+    s = 2E eps (1 - cos(theta)) + m^2
+    smax = 4E*eps + m^2
+    smin = m^2
+    field : n(eps) photon background, see photonField.py
+    s_kin     : tabulated (s - m**2) for cross sections [J^2], size n=2^i+1, log-spaced
+    xs    : tabulated cross sections [m^2]
+    E     : (array of) cosmic ray energies [J]
+    Returns : interaction rate [1/Mpc]
+    """
+    F = integrate.cumtrapz(x=s_kin, y=(s_kin)*xs, initial=0)
+    n = field.getDensity(np.outer(1./(4*E), s_kin))
+    ds = np.mean(np.diff(np.log(s_kin)))  # value of log-spacing
+    return integrate.romb(n * F / (s_kin), dx=ds) / 2 / E * Mpc
+
+
 def romb_truncate(x):
     """ Truncate to largest size n = 2^i + 1 """
     i = int( np.floor(np.log2(n)) ) + 1

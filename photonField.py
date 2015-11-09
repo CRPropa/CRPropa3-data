@@ -13,6 +13,49 @@ T_CMB = 2.72548  # CMB temperature [K]
 
 
 # interfaces
+
+class URB_Protheroe96: 
+    """
+    Universal Radio Background from Protheroe, Bierman 1996. 
+    Taken from EleCa implementation.
+    """
+    name = "URB_Protheroe96"
+    info = "URB_Protheroe96"
+    def getDensity(self, eps, z=0):
+        """
+        Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
+        """
+        v = eps / h
+        x = np.log10(v / 1e9)
+        p0 = -2.23791e+01
+        p1 = -2.59696e-01
+        p2 = 3.51067e-01
+        p3 = -6.80104e-02
+        p4 = 5.82003e-01
+        p5 = -2.00075e+00
+        p6 = -1.35259e+00
+        p7 = -7.12112e-01  #xbreak
+
+        intensity = np.outer(np.zeros(len(x)),np.zeros(len(x[0,:])))
+        for i, value in enumerate(x):
+            for j, val in enumerate(value):
+                if (val > p7):
+                    intensity[i,j] = p0 + p1 * val	+ p3 * val**3 / (np.exp(p4 * val) - 1) + p6 + p5 * val
+                else:
+                    intensity[i,j] = p0 + p1 * val + p2 * val**2 + p3 *val**3 / (np.exp(p4 * val) - 1)
+        intensity = 10**intensity
+        n_eps = 0
+        n_eps = 4 * np.pi / (h * c0) * (intensity / eps);
+        return n_eps;
+
+    def getEmin(self, z=0):
+        """Minimum effective photon energy in [J]"""
+        return 4.1e-12 * eV  #values from EleCa eps_ph_inf_urb
+
+    def getEmax(self, z=0):
+        """Maximum effective photon energy in [J]"""
+        return 0.825e-6 * eV
+
 class CMB:
     """
     Cosmic microwave background radiation
