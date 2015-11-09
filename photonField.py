@@ -11,51 +11,9 @@ h = 6.62606957e-34  # [m^2 kg / s]
 kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
 T_CMB = 2.72548  # CMB temperature [K]
 
-
+# --------------------------------------------------------
 # interfaces
-
-class URB_Protheroe96: 
-    """
-    Universal Radio Background from Protheroe, Bierman 1996. 
-    Taken from EleCa implementation.
-    """
-    name = "URB_Protheroe96"
-    info = "URB_Protheroe96"
-    def getDensity(self, eps, z=0):
-        """
-        Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
-        """
-        v = eps / h
-        x = np.log10(v / 1e9)
-        p0 = -2.23791e+01
-        p1 = -2.59696e-01
-        p2 = 3.51067e-01
-        p3 = -6.80104e-02
-        p4 = 5.82003e-01
-        p5 = -2.00075e+00
-        p6 = -1.35259e+00
-        p7 = -7.12112e-01  #xbreak
-
-        intensity = np.outer(np.zeros(len(x)),np.zeros(len(x[0,:])))
-        for i, value in enumerate(x):
-            for j, val in enumerate(value):
-                if (val > p7):
-                    intensity[i,j] = p0 + p1 * val	+ p3 * val**3 / (np.exp(p4 * val) - 1) + p6 + p5 * val
-                else:
-                    intensity[i,j] = p0 + p1 * val + p2 * val**2 + p3 *val**3 / (np.exp(p4 * val) - 1)
-        intensity = 10**intensity
-        n_eps = 0
-        n_eps = 4 * np.pi / (h * c0) * (intensity / eps);
-        return n_eps;
-
-    def getEmin(self, z=0):
-        """Minimum effective photon energy in [J]"""
-        return 4.1e-12 * eV  #values from EleCa eps_ph_inf_urb
-
-    def getEmax(self, z=0):
-        """Maximum effective photon energy in [J]"""
-        return 0.825e-6 * eV
-
+# --------------------------------------------------------
 class CMB:
     """
     Cosmic microwave background radiation
@@ -106,8 +64,9 @@ class EBL:
         """Maximum tabulated photon energy in [J]"""
         return self.data[z][0][-1]
 
-
+# --------------------------------------------------------
 # EBL (optical and infrared) models
+# --------------------------------------------------------
 class EBL_Kneiske04(EBL):
     name = 'IRB_Kneiske04'
     info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
@@ -306,8 +265,44 @@ class EBL_Dominguez11_lower(EBL):
         for i,z in enumerate(self.redshift):
             self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
 
-
+# --------------------------------------------------------
 # CRB (radio) models
+# --------------------------------------------------------
+class URB_Protheroe96:
+    """
+    Universal Radio Background from Protheroe, Bierman 1996.
+    Taken from EleCa implementation.
+    """
+    name = "URB_Protheroe96"
+    info = "URB_Protheroe96"
+
+    def getDensity(self, eps, z=0):
+        """
+        Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
+        """
+        p0 = -2.23791e+01
+        p1 = -2.59696e-01
+        p2 = 3.51067e-01
+        p3 = -6.80104e-02
+        p4 = 5.82003e-01
+        p5 = -2.00075e+00
+        p6 = -1.35259e+00
+        p7 = -7.12112e-01  # xbreak
+
+        x = np.log10(np.r_[eps] / h / 1e9)
+        I = p0 + p1 * x + p2 * x**2 + p3 * x**3 / (np.exp(p4 * x) - 1)
+        I[x > p7] += p6 + p5 * x[x > p7]
+
+        return 4 * np.pi / (h * c0) * (10**I / eps)
+
+    def getEmin(self, z=0):
+        """Minimum effective photon energy in [J]"""
+        return 4.1e-12 * eV
+
+    def getEmax(self, z=0):
+        """Maximum effective photon energy in [J]"""
+        return 0.825e-6 * eV
+
 class CRB_Biermann96(EBL):
     name = 'URB_Biermann96'
     info = 'cosmic radio background radiation model of Biermann et al. 1996'
