@@ -268,33 +268,35 @@ class EBL_Dominguez11_lower(EBL):
 # --------------------------------------------------------
 # CRB (radio) models
 # --------------------------------------------------------
-class URB_Protheroe96:
+class CRB_Protheroe96:
     """
-    Universal Radio Background from Protheroe, Bierman 1996.
-    Taken from EleCa implementation.
+    Universal Radio Background from Protheroe & Bierman 1996.
+    Taken from EleCa: Parametrization from fit to plots from paper.
     """
-    name = "URB_Protheroe96"
-    info = "URB_Protheroe96"
+    name = "CRB_Protheroe96"
+    info = 'cosmic radio background model of Protheroe & Biermann 1996'
 
     def getDensity(self, eps, z=0):
         """
         Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
         """
+        if z != 0:
+            print 'CRB_Protheroe96: no evolution available!'
+
         p0 = -2.23791e+01
         p1 = -2.59696e-01
         p2 =  3.51067e-01
         p3 = -6.80104e-02
         p4 =  5.82003e-01
-        p5 = -2.00075e+00
-        p6 = -1.35259e+00
-        p7 = -7.12112e-01  # xbreak
+        xmin = -6.003761  # 4.1e-12 eV
+        xmax = -0.315515  # 2e-6 eV
 
         x = np.log10(np.r_[eps] / h / 1e9)
         I = p0 + p1 * x + p2 * x**2 + p3 * x**3 / (np.exp(p4 * x) - 1)
-        s = x > p7
-        I[s] += p6 + p5 * x[s] - p2 * x[s]**2
-
-        return 4 * np.pi / (h * c0) * (10**I / eps)
+        I = 4 * np.pi / (h * c0) * (10**I / eps)
+        I[x < xmin] = 0
+        I[x > xmax] = 0
+        return I
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
@@ -302,24 +304,7 @@ class URB_Protheroe96:
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 0.825e-6 * eV
-
-class CRB_Biermann96(EBL):
-    name = 'URB_Biermann96'
-    info = 'cosmic radio background radiation model of Biermann et al. 1996'
-    files = datadir+'CRB_Biermann96/z0'
-    redshift = (0)
-
-    def __init__(self):
-        EBL.__init__(self)
-        # d[0] : log(nu [GHz])
-        # d[1-3] : log(I_nu [W / m^2 / Hz / sr])
-        # radio galaxies, normal galaxies, normal galaxies (no evolution)
-        d = np.genfromtxt(self.files, names=('nu', 'I1', 'I2', 'I3'))
-        d.sort(order=['nu'], axis=0) # sort by frequency
-        eps = 10**(d['nu']+9) * h
-        n = (10**d['I1'] + 10**d['I2']) * 4*np.pi / c0 / h / eps
-        self.data[0] = eps, n
+        return 2e-6 * eV
 
 class CRB_ARCADE2:
     def getDensity(self, eps):
