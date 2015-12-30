@@ -89,7 +89,9 @@ fields = [
     photonField.EBL_Franceschini08(),
     photonField.EBL_Finke10(),
     photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12()]
+    photonField.EBL_Gilmore12(),
+    photonField.CRB_Protheroe96(),
+    ]
 
 for field in fields:
     print field.name
@@ -131,3 +133,25 @@ def gen_table_z(field, fname):
 
 # gen_table_z(photonField.CMB(), fname%'CMB')
 # gen_table_z(photonField.KneiskeEBL(), fname%'KneiskeIRB')
+
+
+# -------------------------------------------------
+# Reformat CRPropa2 tables of differential spectrum of secondary electrons
+# This should be reimplemented for extension to the other backgrounds,
+# cross-checking and documentation.
+# -------------------------------------------------
+d1 = genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
+d2 = genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
+
+# amplitudes dN/dEe(Ep)
+A1 = d1[2].reshape((70, 170)) # CMB
+A2 = d2[2].reshape((70, 170)) # CMB + IRB (which?)
+A3 = A2 - A1  # IRB only
+
+# normalize to 1
+A1 = (A1.T / sum(A1, axis=1)).T
+A3 = (A2.T / sum(A2, axis=1)).T
+
+# save
+savetxt('data/pair_spectrum_CMB.txt', A1, fmt='%.5e')
+savetxt('data/pair_spectrum_IRB.txt', A3, fmt='%.5e')
