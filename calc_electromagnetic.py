@@ -1,7 +1,6 @@
 from numpy import *
 import interactionRate as iR
 import photonField
-import matplotlib.pyplot as plt
 
 
 eV = 1.60217657e-19
@@ -49,7 +48,7 @@ def Sigma_DPP(s):
     if (s < 16 * ElectronMass**2 * eV **2):
         return 0.
     else: 
-        return 6.45*1e-34 *(1.- 16.*ElectronMass**2 *eV**2 / s)**6
+        return 6.45*1e-34 *(1.- 16.*ElectronMass**2 *eV**2 / s)**6   #gamma = 1 instead of 6 will result in better reproduction of EleCa reference
  
 # truncate to largest length 2^i + 1 for Romberg integration
 s = 10 ** linspace(log10(1.1*ElectronMass**2*eV**2),log10(10**23 * eV**2),1025)
@@ -57,7 +56,7 @@ skin_PP_DPP = s
 skin_ICS_TPP = s - ElectronMass**2 * eV**2
 
 # choose energy range of interacting particle for which the interaction rate should be tabulated
-lEnergy = linspace(12.75, 23, 1026)
+lEnergy = linspace(12.01, 23, 1100)
 Energy  = 10**lEnergy * eV
 
 # photo pair production PP
@@ -84,13 +83,18 @@ fields = [
     photonField.URB_Protheroe96(),
     photonField.CMB(),
     photonField.CRB_Biermann96(),
-    photonField.EBL_Kneiske04(),
     photonField.EBL_Stecker05(),
+    photonField.EBL_Kneiske04(),
     photonField.EBL_Franceschini08(),
     photonField.EBL_Finke10(),
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12()
     ]
+
+#rges_1 = zeros(len(Energy))
+#rges_2 = zeros(len(Energy))
+#rges_3 = zeros(len(Energy))
+#rges_4 = zeros(len(Energy))
 
 for field in fields:
 
@@ -99,8 +103,22 @@ for field in fields:
     r3 = iR.rate(skin_PP_DPP, xs3, Energy, field)
     r4 = iR.rate(skin_ICS_TPP, xs4, Energy, field)
 
+    #rges_1 += r1
+    #rges_2 += r2
+    #rges_3 += r3
+    #rges_4 += r4
+
     fname = 'data/EleCa/interactionlength_%s.txt' % field.name
     data  = c_[log10(Energy/eV),r1,r2,r3,r4]
     fmt   = '%.3f\t%.6e\t%.6e\t%.6e\t%.6e'
+    #data  = c_[Energy/eV,1./r1,1./r2,1./r3,1./r4]
+    #fmt   = '%.5e\t%.5e\t%.5e\t%.5e\t%.5e'
     header = 'Interaction rate with the %s\nlog10(E/eV)\t1/lambda_PP [1/Mpc]\t1/lambda_ICS [1/Mpc]\t1/lambda_DPP [1/Mpc]\t1/lambda_TPP [1/Mpc]'%field.info
     savetxt(fname, data, fmt=fmt, header=header)
+
+#fname = 'data/EleCa/interactionlength_all.txt'
+#data  = c_[Energy/eV,1./rges_1,1./rges_2,1./rges_3,1./rges_4]
+#fmt   = '%.5e\t%.5e\t%.5e\t%.5e\t%.5e'
+#header = 'Interaction length for all backgrounds\nE/eV\tlambda_PP [Mpc]\tlambda_ICS [Mpc]\tlambda_DPP [Mpc]\tlambda_TPP [Mpc]'
+#savetxt(fname, data, fmt=fmt, header=header)
+
