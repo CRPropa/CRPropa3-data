@@ -280,6 +280,9 @@ class URB_Protheroe96:
         """
         Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
         """
+        epsMin = 4.1e-12 * eV
+        epsMax = 0.825e-6 * eV #spaeter auf 2.0 setzten weil richtiger und die aktuelle version nehmen von git 
+
         p0 = -2.23791e+01
         p1 = -2.59696e-01
         p2 = 3.51067e-01
@@ -289,19 +292,25 @@ class URB_Protheroe96:
         p6 = -1.35259e+00
         p7 = -7.12112e-01  # xbreak
 
-        x = np.log10(np.r_[eps] / h / 1e9)
+        eps = np.r_[eps]
+        x = np.log10(eps / h / 1e9)
         I = p0 + p1 * x + p2 * x**2 + p3 * x**3 / (np.exp(p4 * x) - 1)
         I[x > p7] += p6 + p5 * x[x > p7] - p2 * x[x > p7]**2
+        I = 4 * np.pi / (h * c0) * (10**I / eps)
 
-        return 4 * np.pi / (h * c0) * (10**I / eps)
+        I[eps < epsMin] = 0
+        I[eps > epsMax] = 0
+
+        return I
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
-        return 4.1e-12 * eV
+        return 4.1e-12*eV
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 0.825e-6 * eV
+        return 0.825e-6*eV
+
 
 class CRB_Biermann96(EBL):
     name = 'URB_Biermann96'
