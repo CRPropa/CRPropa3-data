@@ -82,7 +82,7 @@ for i in range(0,len(s)):
 fields = [
     photonField.URB_Protheroe96(),
     photonField.CMB(),
-    photonField.CRB_Biermann96(),
+#    photonField.CRB_Biermann96(),
     photonField.EBL_Stecker05(),
     photonField.EBL_Kneiske04(),
     photonField.EBL_Franceschini08(),
@@ -108,7 +108,7 @@ for field in fields:
     #rges_3 += r3
     #rges_4 += r4
 
-    fname = 'data/EleCa/interactionlength_%s.txt' % field.name
+    fname = 'Interaction_Length_Tables_For_CRPropa/interactionlength_%s.txt' % field.name
     data  = c_[log10(Energy/eV),r1,r2,r3,r4]
     fmt   = '%.3f\t%.6e\t%.6e\t%.6e\t%.6e'
     #data  = c_[Energy/eV,1./r1,1./r2,1./r3,1./r4]
