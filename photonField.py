@@ -298,8 +298,8 @@ class URB_Protheroe96:
         I[x > p7] += p6 + p5 * x[x > p7] - p2 * x[x > p7]**2
         I = 4 * np.pi / (h * c0) * (10**I / eps)
 
-        I[eps < epsMin] = 0
-        I[eps > epsMax] = 0
+#        I[eps < epsMin] = 0
+#        I[eps > epsMax] = 0
 
         return I
 
@@ -311,23 +311,6 @@ class URB_Protheroe96:
         """Maximum effective photon energy in [J]"""
         return 0.825e-6*eV
 
-
-class CRB_Biermann96(EBL):
-    name = 'URB_Biermann96'
-    info = 'cosmic radio background radiation model of Biermann et al. 1996'
-    files = datadir+'CRB_Biermann96/z0'
-    redshift = (0)
-
-    def __init__(self):
-        EBL.__init__(self)
-        # d[0] : log(nu [GHz])
-        # d[1-3] : log(I_nu [W / m^2 / Hz / sr])
-        # radio galaxies, normal galaxies, normal galaxies (no evolution)
-        d = np.genfromtxt(self.files, names=('nu', 'I1', 'I2', 'I3'))
-        d.sort(order=['nu'], axis=0) # sort by frequency
-        eps = 10**(d['nu']+9) * h
-        n = (10**d['I1'] + 10**d['I2']) * 4*np.pi / c0 / h / eps
-        self.data[0] = eps, n
 
 class CRB_ARCADE2:
     def getDensity(self, eps):
