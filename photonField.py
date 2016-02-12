@@ -268,43 +268,49 @@ class EBL_Dominguez11_lower(EBL):
 # --------------------------------------------------------
 # CRB (radio) models
 # --------------------------------------------------------
-class CRB_Protheroe96:
+class URB_Protheroe96:
     """
-    Universal Radio Background from Protheroe & Bierman 1996.
-    Taken from EleCa: Parametrization from fit to plots from paper.
+    Universal Radio Background from Protheroe, Bierman 1996.
+    Taken from EleCa implementation.
     """
-    name = "CRB_Protheroe96"
-    info = 'cosmic radio background model of Protheroe & Biermann 1996'
+    name = "URB_Protheroe96"
+    info = "URB_Protheroe96"
 
     def getDensity(self, eps, z=0):
         """
         Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
         """
-        if z != 0:
-            print 'CRB_Protheroe96: no evolution available!'
+        epsMin = 4.1e-12 * eV
+        epsMax = 0.825e-6 * eV #spaeter auf 2.0 setzten weil richtiger und die aktuelle version nehmen von git 
 
         p0 = -2.23791e+01
         p1 = -2.59696e-01
-        p2 =  3.51067e-01
+        p2 = 3.51067e-01
         p3 = -6.80104e-02
-        p4 =  5.82003e-01
-        xmin = -6.003761  # 4.1e-12 eV
-        xmax = -0.315515  # 2e-6 eV
+        p4 = 5.82003e-01
+        p5 = -2.00075e+00
+        p6 = -1.35259e+00
+        p7 = -7.12112e-01  # xbreak
 
-        x = np.log10(np.r_[eps] / h / 1e9)
+        eps = np.r_[eps]
+        x = np.log10(eps / h / 1e9)
         I = p0 + p1 * x + p2 * x**2 + p3 * x**3 / (np.exp(p4 * x) - 1)
+        I[x > p7] += p6 + p5 * x[x > p7] - p2 * x[x > p7]**2
         I = 4 * np.pi / (h * c0) * (10**I / eps)
-        I[x < xmin] = 0
-        I[x > xmax] = 0
+
+#        I[eps < epsMin] = 0
+#        I[eps > epsMax] = 0
+
         return I
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
-        return 4.1e-12 * eV
+        return 4.1e-12*eV
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 2e-6 * eV
+        return 0.825e-6*eV
+
 
 class CRB_ARCADE2:
     def getDensity(self, eps):
