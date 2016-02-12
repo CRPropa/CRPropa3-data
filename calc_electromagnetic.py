@@ -26,7 +26,7 @@ def Sigma_ICS(s):
     """
     comp. Lee 96
     """
-    if (s < 1.01 * ElectronMass**2 *eV**2):
+    if (s < 1.0 * ElectronMass**2 *eV**2):
         return 0.
     else:
       beta = (s - ElectronMass**2 *eV**2)/(s + ElectronMass**2 *eV**2)
@@ -48,33 +48,36 @@ def Sigma_DPP(s):
     if (s < 16 * ElectronMass**2 * eV **2):
         return 0.
     else: 
-        return 6.45*1e-34 *(1.- 16.*ElectronMass**2 *eV**2 / s)**6   #gamma = 1 instead of 6 will result in better reproduction of EleCa reference
+        return 6.45*1e-34 *(1.- 16.*ElectronMass**2 *eV**2 / s)**6   #exponent = 1 instead of 6 will result in better reproduction of EleCa reference
  
 # truncate to largest length 2^i + 1 for Romberg integration
-s = 10 ** linspace(log10(1.1*ElectronMass**2*eV**2),log10(10**23 * eV**2),1025)
-skin_PP_DPP = s
-skin_ICS_TPP = s - ElectronMass**2 * eV**2
+skin_PP_DPP = logspace(-28,log10(10**23 * eV**2),1025)
+skin_ICS_TPP = logspace(-28,log10(10**23 * eV**2- ElectronMass**2 *eV**2),1025)
 
 # choose energy range of interacting particle for which the interaction rate should be tabulated
-lEnergy = linspace(12.01, 23, 1100)
+lEnergy = linspace(12, 23, 1101)
 Energy  = 10**lEnergy * eV
 
 # photo pair production PP
+s = skin_PP_DPP
 xs1 = zeros(len(s))
 for i in range(0,len(s)):
     xs1[i] = Sigma_PP(s[i])
 
 # inverse compton scattering ICS
+s = skin_ICS_TPP + ElectronMass**2 *eV**2
 xs2 = zeros(len(s))
 for i in range(0,len(s)):
-  xs2[i] = Sigma_ICS(s[i])  #resulting interaction lengths differ from eleca.dat -> further cross check needed  
+  xs2[i] = Sigma_ICS(s[i])  
 
 # photo double pair production DPP
+s = skin_PP_DPP
 xs3 = zeros(len(s))
 for i in range(0,len(s)):
   xs3[i] = Sigma_DPP(s[i])
 
 # triplet pair production TPP
+s = skin_ICS_TPP + ElectronMass**2 *eV**2
 xs4 = zeros(len(s))
 for i in range(0,len(s)):
   xs4[i] = Sigma_TPP(s[i])
@@ -82,7 +85,6 @@ for i in range(0,len(s)):
 fields = [
     photonField.URB_Protheroe96(),
     photonField.CMB(),
-#    photonField.CRB_Biermann96(),
     photonField.EBL_Stecker05(),
     photonField.EBL_Kneiske04(),
     photonField.EBL_Franceschini08(),
@@ -108,13 +110,19 @@ for field in fields:
     #rges_3 += r3
     #rges_4 += r4
 
-    fname = 'Interaction_Length_Tables_For_CRPropa/interactionlength_%s.txt' % field.name
+    fname = 'data/EleCa/interactionlength_%s.txt' % field.name
     data  = c_[log10(Energy/eV),r1,r2,r3,r4]
     fmt   = '%.3f\t%.6e\t%.6e\t%.6e\t%.6e'
     #data  = c_[Energy/eV,1./r1,1./r2,1./r3,1./r4]
     #fmt   = '%.5e\t%.5e\t%.5e\t%.5e\t%.5e'
     header = 'Interaction rate with the %s\nlog10(E/eV)\t1/lambda_PP [1/Mpc]\t1/lambda_ICS [1/Mpc]\t1/lambda_DPP [1/Mpc]\t1/lambda_TPP [1/Mpc]'%field.info
     savetxt(fname, data, fmt=fmt, header=header)
+
+#    fname = 'CRPropa_Tables_1e15_1e23_eV/EMInverseComptonScattering_%s.txt' % field.name
+#    data  = c_[log10(Energy/eV),r2]
+#    fmt   = '%.3f\t%.6e'
+#    header = 'Interaction rate with the %s\nlog10(E/eV)\t1/lambda_ICS [1/Mpc]'%field.info
+#    savetxt(fname, data, fmt=fmt, header=header)
 
 #fname = 'data/EleCa/interactionlength_all.txt'
 #data  = c_[Energy/eV,1./rges_1,1./rges_2,1./rges_3,1./rges_4]
