@@ -8,7 +8,7 @@ from scipy.integrate import quad
 # Z: 0-26, output: formatted file
 
 class Decay:
-    def __repr__(self):
+    def __str__(self):
         return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f'%(self.Z, self.N, self.mode, self.tau, self.br)
 
     def load(self, s):
@@ -296,18 +296,33 @@ fout.close()
 
 
 ### save isotopes with tau > 2 s to consider for photo-disintegration
-fout = open('isotopes.txt', 'w')
-fout.write('#Z\tN\tA\n')
+# this is not needed for CRPropa
+fout = open('data/isotopes-2s.txt', 'w')
+fout.write('# Z\tN\tA\n')
+fout.write('# isotopes with lifetime > 2s (including beta+ correction, see calc_decay.py)\n')
 for z in range(1,27):
     for n in range(1,31):
         if (z + n)==0:
             continue
-
         c = 0  # total decay constant
         for d in decayTable[z][n]:
             c += 1 / d.tau
-
         if c < 1/2.:  # check for tau < 2 s
             fout.write('%i\t%i\t%i\n' % (z, n, z+n))
+fout.close()
 
+
+### save stable isotopes
+# this is not needed for CRPropa
+fout = open('data/isotopes-stable.txt', 'w')
+fout.write('# Z\tN\tA\n')
+fout.write('# stable isotopes (including beta+ correction, see calc_decay.py)\n')
+for z in range(1,27):
+    for n in range(1,31):
+        if (z + n)==0:
+            continue
+        for d in decayTable[z][n]:
+            if d.tau != inf:
+                continue
+            fout.write('%i\t%i\t%i\n' % (z, n, z+n))
 fout.close()
