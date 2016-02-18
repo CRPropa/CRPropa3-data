@@ -89,9 +89,9 @@ for field in fields:
 # ----------------------------------------------------------------
 def saveCDF(E, sigma, skin, field, name):
     s = skin.copy()  
-    if (name == 'EMInverseComptonScattering' or name == 'EMTripletPairProduction'):
+    if (name == 'EMInverseComptonScattering_CDF' or name == 'EMTripletPairProduction_CDF'):
       s += me2 * eV**2
-    xs   = [sigma(s) for s in skin]
+    xs   = array([sigma(si) for si in s])
     rate = iR.integrant_simple(skin, xs, E, field)
     lE = repeat(log10(E/eV), len(skin))
     ls = repeat(log10(skin/eV**2)[newaxis,:], len(E), axis=0).flatten()
