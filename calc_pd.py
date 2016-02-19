@@ -22,8 +22,8 @@ xs1exc = array([iR.romb_pad_zero(x, 513) for x in d1exc['xs']])*1e-31
 
 
 # cross sections for A >= 12 (TALYS)
-# ddir2 = 'tables/PD_Talys1.6_Khan/'
-ddir2 = 'tables/PD_Talys1.6_Geant4/'
+ddir2 = 'tables/PD_Talys1.6_Khan/'
+# ddir2 = 'tables/PD_Talys1.6_Geant4/'
 isotopes2 = genfromtxt(ddir2 + 'isotopes.txt')
 x = genfromtxt(ddir2+'eps.txt') * eV * 1e6  # [J]
 n = len(x)

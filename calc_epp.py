@@ -90,7 +90,6 @@ fields = [
     photonField.EBL_Finke10(),
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
-    photonField.CRB_Protheroe96(),
     ]
 
 for field in fields:
