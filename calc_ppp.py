@@ -29,6 +29,8 @@ fields = [
     ]
 
 for field in fields:
+    print field
+
     r1 = iR.invMFP_fast(eps1[0:2049], xs1[0:2049], gamma, field)
     r2 = iR.invMFP_fast(eps2[0:2049], xs2[0:2049], gamma, field)
 
@@ -41,6 +43,7 @@ for field in fields:
 
 # redshift dependent
 for field in fields:
+    print field
 
     if field.redshift is None:
         continue
@@ -53,7 +56,7 @@ for field in fields:
 
     data = concatenate( [d for d in data], axis=0 )
     nan_to_num( data )
-    fname = 'data/ppp_%sz.txt' % field.name
+    fname = 'data/ppp_%s.txt' % field.name.replace('IRB', 'IRBz')
     fmt   = '%.2f\t%.2f\t%.6e\t%.6e'
     header = ("Photo-pion interaction rate for different redshifts %s\n"
               "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]"%field.info)
