@@ -35,7 +35,8 @@ for field in fields:
     fname = 'data/ppp_%s.txt' % field.name
     data  = c_[lgamma, r1, r2]
     fmt   = '%.2f\t%.6e\t%.6e'
-    header = 'Photo-pion interaction rate with the %s\nlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]'%field.info
+    header = ("Photo-pion interaction rate with the %s\nlog10(gamma)"
+              "\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]"%field.info)
     savetxt(fname, data, fmt=fmt, header=header)
 
 # redshift dependent
@@ -54,5 +55,6 @@ for field in fields:
     nan_to_num( data )
     fname = 'data/ppp_%sz.txt' % field.name
     fmt   = '%.2f\t%.2f\t%.6e\t%.6e'
-    header = 'Photo-pion interaction rate for different redshifts %s\nz\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]'%field.info
+    header = ("Photo-pion interaction rate for different redshifts %s\n"
+              "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]"%field.info)
     savetxt(fname, data, fmt=fmt, header=header)
