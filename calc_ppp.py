@@ -25,7 +25,8 @@ fields = [
     photonField.EBL_Franceschini08(),
     photonField.EBL_Finke10(),
     photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12()]
+    photonField.EBL_Gilmore12()
+    ]
 
 for field in fields:
     r1 = iR.invMFP_fast(eps1[0:2049], xs1[0:2049], gamma, field)
@@ -35,4 +36,23 @@ for field in fields:
     data  = c_[lgamma, r1, r2]
     fmt   = '%.2f\t%.6e\t%.6e'
     header = 'Photo-pion interaction rate with the %s\nlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]'%field.info
+    savetxt(fname, data, fmt=fmt, header=header)
+
+# redshift dependent
+for field in fields:
+
+    if field.redshift is None:
+        continue
+
+    data = []
+    for z in field.redshift:
+        r1 = iR.invMFP_fast(eps1[0:2049], xs1[0:2049], gamma, field)
+        r2 = iR.invMFP_fast(eps2[0:2049], xs2[0:2049], gamma, field)
+        data.append( c_[[z]*len(lgamma), lgamma, r1, r2] )
+
+    data = concatenate( [d for d in data], axis=0 )
+    nan_to_num( data )
+    fname = 'data/ppp_%sz.txt' % field.name
+    fmt   = '%.2f\t%.2f\t%.6e\t%.6e'
+    header = 'Photo-pion interaction rate for different redshifts %s\nz\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]'%field.info
     savetxt(fname, data, fmt=fmt, header=header)
