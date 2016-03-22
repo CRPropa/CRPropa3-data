@@ -147,10 +147,10 @@ A1 = d1[2].reshape((70, 170)) # CMB
 A2 = d2[2].reshape((70, 170)) # CMB + IRB (which?)
 A3 = A2 - A1  # IRB only
 
-# normalize to 1
-A1 = (A1.T / sum(A1, axis=1)).T
-A3 = (A2.T / sum(A2, axis=1)).T
+# # normalize to 1
+# A1 = (A1.T / sum(A1, axis=1)).T
+# A3 = (A3.T / sum(A3, axis=1)).T
 
 # save
-savetxt('data/pair_spectrum_CMB.txt', A1, fmt='%.5e')
-savetxt('data/pair_spectrum_IRB.txt', A3, fmt='%.5e')
+savetxt('data/epp_spectrum_CMB.txt', A1, fmt='%.5e')
+savetxt('data/epp_spectrum_IRB.txt', A3, fmt='%.5e')
