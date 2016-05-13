@@ -366,7 +366,7 @@ for z in range(0,27):
                     if modeDict[d.mode] != modeDict[g.mode]:
                         continue
                     for i in range(0,len(g.energy)):
-                        s += '_%e_%e'%(g.energy[i],g.intensity[i])
+                        s += ' %e %e'%(g.energy[i],g.intensity[i])
                 s += '\n'
                 fout.write(s)
 
