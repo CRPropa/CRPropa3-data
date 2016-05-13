@@ -48,6 +48,72 @@ class Decay:
     def isBetaMinus(self):
         return self.mode.find('B') > -1
 
+class GammaEmission:
+    def __init__(self):
+        self.energy = []
+        self.intensity = []
+
+    def __repr__(self):
+        s = ''
+        for i in range(0, len(self.energy)):
+            s += 'Z = %i N = %i mode = %s energy = %.3f intensity = %.3e\n'%(self.Z, self.N, self.mode, self.energy[i], self.intensity[i])
+        return s[:-1]
+
+    def load(self, m):
+        self.Z = int(m[0].split('\t')[2])
+        self.N = int(m[0].split('\t')[3])
+        self.id = self.Z * 1000 + self.N
+        self.mode = str(m[0].split('\t')[7]).strip()
+        for line in m:
+            l = line.split('\t')
+            self.energy.append(double(l[13]))
+            self.intensity.append(double(l[17]))
+
+### parse gamma emission data file
+### gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp Decay Radiation Search with Z = 0..26, A = 0..56
+print '\nParsing data file'
+print '-------------------------------------'
+data = open('tables/gamma_NuDat2.txt')
+lines = data.readlines()[1:-3] # skip header and footer
+data.close()
+
+gammaEmissionTable = [[[] for n in range(31)] for z in range(27)]
+N = 0
+Z = 0
+mode = ''
+m = []
+for i,line in enumerate(lines):
+    l = line.split('\t')
+    if (int(l[2]) > 26): # skip if Z > 26 (Fe-56)
+        continue
+    if (int(l[3]) > 30): # skip if N > 30 (Fe-56)
+        continue
+    if (str(l[7]).strip() == 'IT'): # skip if isomeric transition
+        continue
+    if (str(l[12]).strip() != ''): # remove all photons from Auger electrons, conversion electrons, annihilation after beta+ decays and Xray photons, cause they cannot be produced by ionised nucleii propagated with CRPropa
+        continue
+    if (str(l[11]).strip() != 'G'): # take only gamma radiation type
+        continue
+    if (int(l[2]) == Z and int(l[3]) == N and mode == str(l[7]).strip()):
+        m.append(line)
+        if (i == len(lines)-1):
+            gamma = GammaEmission()
+            gamma.load(m)
+            gammaEmissionTable[Z][N].append(gamma)
+    else:
+        if m:
+            gamma = GammaEmission()
+            gamma.load(m)
+            gammaEmissionTable[Z][N].append(gamma)
+        Z = int(l[2])
+        N = int(l[3])
+        mode = str(l[7]).strip()
+        m = []
+        m.append(line)
+        if (i == len(lines)-1):
+            gamma = GammaEmission()
+            gamma.load(m)
+            gammaEmissionTable[Z][N].append(gamma)
 
 ### parse data file
 print '\nParsing data file'
@@ -254,7 +320,7 @@ for z in range(0,27):
 
 ### save decay table
 fout = open('data/nuclear_decay.txt','w')
-fout.write('# Z, N, Mean Life Time [s], Decay Mode (#beta- #beta+ #alpha #p #n), dE\n')
+fout.write('# Z, N, Mean Life Time [s], Decay Mode (#beta- #beta+ #alpha #p #n), Gamma Energy 1, Gamma Emission Probability 1, Gamma Energy 2, Gamma Emission Probability 2, ...\n')
 
 # decay mode codes: #beta- #beta+ #alpha #p #n
 modeDict = {'STABLE' : '0',
@@ -267,6 +333,7 @@ modeDict = {'STABLE' : '0',
         'B-' : '10000',
         '2B-': '20000',
         'BN' : '10001',
+				'B-N': '10001',
         'B2N': '10002',
         'B3N': '10003',
         'B4N': '10004',
@@ -274,6 +341,7 @@ modeDict = {'STABLE' : '0',
         'BA' : '10100',
         'B2A': '10200',
         'B3A': '10300',
+        'B+' : '01000',
         'EC' : '01000',
         '2EC': '02000',
         'EA' : '01100',
@@ -290,7 +358,17 @@ for z in range(0,27):
             # skip stable
             if d.tau == inf:
                 continue
-            fout.write('%i %i %s %e\n'%(d.Z, d.N, modeDict[d.mode], d.tau))
+            if not gammaEmissionTable[z][n]:
+                fout.write('%i %i %s %e\n'%(d.Z, d.N, modeDict[d.mode], d.tau))
+            else:
+                s = '%i %i %s %e'%(d.Z, d.N, modeDict[d.mode], d.tau)
+                for g in gammaEmissionTable[z][n]:
+                    if modeDict[d.mode] != modeDict[g.mode]:
+                        continue
+                    for i in range(0,len(g.energy)):
+                        s += '_%e_%e'%(g.energy[i],g.intensity[i])
+                s += '\n'
+                fout.write(s)
 
 fout.close()
 
