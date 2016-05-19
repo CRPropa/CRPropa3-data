@@ -69,6 +69,11 @@ class GammaEmission:
             self.energy.append(double(l[13]))
             self.intensity.append(double(l[17]))
 
+    def combine(self,g):
+        for i in range(0,len(g.intensity)):
+            self.intensity.append(g.intensity[i])
+            self.energy.append(g.energy[i])
+
 ### parse gamma emission data file
 ### gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp Decay Radiation Search with Z = 0..26, A = 0..56
 print '\nParsing data file'
@@ -80,6 +85,7 @@ data.close()
 gammaEmissionTable = [[[] for n in range(31)] for z in range(27)]
 N = 0
 Z = 0
+lastPrint = ''
 mode = ''
 m = []
 for i,line in enumerate(lines):
@@ -89,6 +95,14 @@ for i,line in enumerate(lines):
     if (int(l[3]) > 30): # skip if N > 30 (Fe-56)
         continue
     if (str(l[7]).strip() == 'IT'): # skip if isomeric transition
+        if (lastPrint != 'Z=%i, N=%i, mode=%s'%(int(l[2]), int(l[3]),str(l[7]).strip())):
+            print 'Z=%i, N=%i, mode=%s'%(int(l[2]), int(l[3]),str(l[7]).strip()),'<- skip (isomeric transition)'
+            lastPrint = 'Z=%i, N=%i, mode=%s'%(int(l[2]), int(l[3]),str(l[7]).strip())
+        continue
+    if (str(l[4]).strip() == '0+X' or double(l[4]) > 0.): # skip if parent nuclei is in excited state
+        if (lastPrint != 'Z=%i, N=%i, par. Elevel=%s'%(int(l[2]), int(l[3]),str(l[4]).strip())):
+            print 'Z=%i, N=%i, par. Elevel=%s'%(int(l[2]), int(l[3]),str(l[4]).strip()),'<- skip (excited parent nuclei)'
+            lastPrint = 'Z=%i, N=%i, par. Elevel=%s'%(int(l[2]), int(l[3]),str(l[4]).strip())
         continue
     if (str(l[12]).strip() != ''): # remove all photons from Auger electrons, conversion electrons, annihilation after beta+ decays and Xray photons, cause they cannot be produced by ionised nucleii propagated with CRPropa
         continue
@@ -114,6 +128,49 @@ for i,line in enumerate(lines):
             gamma = GammaEmission()
             gamma.load(m)
             gammaEmissionTable[Z][N].append(gamma)
+
+### explicitly edit some entries
+print '\nExplicitly editing certain entries'
+print '-------------------------------------'
+
+# for beta-n decay of Na-27 photon emission probability is 100% if decay happens
+g0 = gammaEmissionTable[11][16][1]
+g0.intensity[0] = 100.
+print g0, ' <- set photon emission probability to 100% (photon is emitted if decay happens)\n'
+
+# beta- decay of Na-27 accidently seperated in two decays in parsing procedure
+g0 = gammaEmissionTable[11][16][0]
+g1 = gammaEmissionTable[11][16][2]
+g0.combine(g1)
+print g0, ' <- combine accidently seperated beta- decays\n'
+print g1, ' <- remove second beta- decay\n'
+gammaEmissionTable[11][16].remove(g1)
+
+# renormalize emission probability for beta+ decay of K-40 (BR = 10.86%, intensity = 10.66% -> emission prob if decay happens = 98.16%)
+g0 = gammaEmissionTable[19][21][0]
+g0.intensity[0] = 98.16
+print g0, ' <- renormalize photon emission probability to 98.16% (photon emitted to 98.16% if decay happens)\n'
+
+# remove one of two tabulated beta- decays for K-46
+g0 = gammaEmissionTable[19][27][0]
+print g0,'\n'
+takeIndex = [2,3,4,7,9,11]
+energy = []
+intensity = []
+for index in takeIndex:
+    energy.append(g0.energy[index])
+    intensity.append(g0.intensity[index])
+g0.intensity = intensity
+g0.energy = energy
+print g0, ' <- removed additional beta- decay with same properties\n'
+
+# for beta- and beta+ decay of V-50 emission probability of photon is 100% if decay happens
+g0 = gammaEmissionTable[23][27][0]
+g1 = gammaEmissionTable[23][27][1]
+g0.intensity[0] = 100.
+g1.intensity[0] = 100.
+print g0, ' <- set photon emission probability to 100% (photon is emitted if decay happens)\n'
+print g1, ' <- set photon emission probability to 100% (photon is emitted if decay happens)\n'
 
 ### parse data file
 print '\nParsing data file'
