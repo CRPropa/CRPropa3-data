@@ -3,21 +3,18 @@ import crpropa as crp
 from scipy.integrate import quad
 
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
-# See http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp
-# Query settings:
-# Z: 0-26, output: formatted file
+# Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
+# Decay Radiation Search: gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp --> gamma_NuDat2.txt
 
 class Decay:
-    def __str__(self):
-        return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f'%(self.Z, self.N, self.mode, self.tau, self.br)
-
     def load(self, s):
         l = s.split('\t')
-
-        # Z, N, id
         self.Z = int(l[2])
         self.N = int(l[3])
         self.id = self.Z * 1000 + self.N
+
+        # mode
+        self.mode = l[12].strip()
 
         # decay time
         s = l[9].strip()
@@ -28,9 +25,6 @@ class Decay:
         else:
             self.tau = float(s) / log(2)  # half-life --> life time
 
-        # mode
-        self.mode = l[12].strip()
-
         # branching ratio
         s = ''.join(c for c in l[13] if c not in ('>','<','=','~','%',' ','?','\n'))
         self.brString = s
@@ -38,6 +32,9 @@ class Decay:
             self.br = 0.
         else:
             self.br = float(s) / 100.  # % --> fraction
+
+    def __str__(self):
+        return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f' % (self.Z, self.N, self.mode, self.tau, self.br)
 
     def isStable(self):
         return self.tau == inf
@@ -49,131 +46,100 @@ class Decay:
         return self.mode.find('B') > -1
 
 class GammaEmission:
-    def __init__(self):
+    def __init__(self, lines):
+        l = lines[0].split('\t')
+        self.Z = int(l[2])
+        self.N = int(l[3])
+        self.id = self.Z * 1000 + self.N
+        self.mode = l[7].strip()
+
         self.energy = []
         self.intensity = []
-
-    def __repr__(self):
-        s = ''
-        for i in range(0, len(self.energy)):
-            s += 'Z = %i N = %i mode = %s energy = %.3f intensity = %.3e\n'%(self.Z, self.N, self.mode, self.energy[i], self.intensity[i])
-        return s[:-1]
-
-    def load(self, m):
-        self.Z = int(m[0].split('\t')[2])
-        self.N = int(m[0].split('\t')[3])
-        self.id = self.Z * 1000 + self.N
-        self.mode = str(m[0].split('\t')[7]).strip()
-        for line in m:
+        for line in lines:
             l = line.split('\t')
-            self.energy.append(double(l[13]))
-            self.intensity.append(double(l[17]))
+            self.energy.append(float(l[13]))
+            self.intensity.append(float(l[17]))
 
-    def combine(self,g):
-        for i in range(0,len(g.intensity)):
-            self.intensity.append(g.intensity[i])
-            self.energy.append(g.energy[i])
+    def __str__(self):
+        s = 'Z = %i N = %i mode = %s' % (self.Z, self.N, self.mode)
+        for i in range(len(self.energy)):
+            s += '\n    energy = %.3f intensity = %.3e' % (self.energy[i], self.intensity[i])
+        return s
+
 
 ### parse gamma emission data file
-### gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp Decay Radiation Search with Z = 0..26, A = 0..56
-print '\nParsing data file'
+print '\nParsing gamma emission data file'
 print '-------------------------------------'
 data = open('tables/gamma_NuDat2.txt')
 lines = data.readlines()[1:-3] # skip header and footer
 data.close()
 
-gammaEmissionTable = [[[] for n in range(31)] for z in range(27)]
-N = 0
-Z = 0
-lastPrint = ''
-mode = ''
-m = []
-for i,line in enumerate(lines):
+# create list of gamma emission entries for each isotope
+gammaTable = [[{} for n in range(31)] for z in range(27)]
+for i, line in enumerate(lines):
     l = line.split('\t')
-    if (int(l[2]) > 26): # skip if Z > 26 (Fe-56)
+    Z = int(l[2])
+    N = int(l[3])
+    mode = l[7].strip()
+    if (Z > 26) or (N > 30):  # skip if higher than Fe-56
         continue
-    if (int(l[3]) > 30): # skip if N > 30 (Fe-56)
+    if (mode == 'IT'):  # skip isomeric transition
         continue
-    if (str(l[7]).strip() == 'IT'): # skip if isomeric transition
-        if (lastPrint != 'Z=%i, N=%i, mode=%s'%(int(l[2]), int(l[3]),str(l[7]).strip())):
-            print 'Z=%i, N=%i, mode=%s'%(int(l[2]), int(l[3]),str(l[7]).strip()),'<- skip (isomeric transition)'
-            lastPrint = 'Z=%i, N=%i, mode=%s'%(int(l[2]), int(l[3]),str(l[7]).strip())
+    if (l[4].strip() == '0+X' or float(l[4]) > 0):  # skip if parent nuclei in excited state
         continue
-    if (str(l[4]).strip() == '0+X' or double(l[4]) > 0.): # skip if parent nuclei is in excited state
-        if (lastPrint != 'Z=%i, N=%i, par. Elevel=%s'%(int(l[2]), int(l[3]),str(l[4]).strip())):
-            print 'Z=%i, N=%i, par. Elevel=%s'%(int(l[2]), int(l[3]),str(l[4]).strip()),'<- skip (excited parent nuclei)'
-            lastPrint = 'Z=%i, N=%i, par. Elevel=%s'%(int(l[2]), int(l[3]),str(l[4]).strip())
+    if (l[11].strip() != 'G'):  # take only gamma radiation type
         continue
-    if (str(l[12]).strip() != ''): # remove all photons from Auger electrons, conversion electrons, annihilation after beta+ decays and Xray photons, cause they cannot be produced by ionised nucleii propagated with CRPropa
+    if (l[12].strip() != ''):  # ionized nuclei: no Auger electrons, conversion electrons and annihilation
         continue
-    if (str(l[11]).strip() != 'G'): # take only gamma radiation type
-        continue
-    if (int(l[2]) == Z and int(l[3]) == N and mode == str(l[7]).strip()):
-        m.append(line)
-        if (i == len(lines)-1):
-            gamma = GammaEmission()
-            gamma.load(m)
-            gammaEmissionTable[Z][N].append(gamma)
-    else:
-        if m:
-            gamma = GammaEmission()
-            gamma.load(m)
-            gammaEmissionTable[Z][N].append(gamma)
-        Z = int(l[2])
-        N = int(l[3])
-        mode = str(l[7]).strip()
-        m = []
-        m.append(line)
-        if (i == len(lines)-1):
-            gamma = GammaEmission()
-            gamma.load(m)
-            gammaEmissionTable[Z][N].append(gamma)
+    gammaTable[Z][N].setdefault(mode, []).append(line)
+
+# for each isotope and decay mode combine all gamma entries
+for Z in range(27):
+    for N in range(31):
+        if not(gammaTable[Z][N]):  # no entry
+            continue
+        for mode, entries in gammaTable[Z][N].items():
+            gammaTable[Z][N][mode] = GammaEmission(entries)
+
 
 ### explicitly edit some entries
 print '\nExplicitly editing certain entries'
 print '-------------------------------------'
 
 # for beta-n decay of Na-27 photon emission probability is 100% if decay happens
-g0 = gammaEmissionTable[11][16][1]
+g0 = gammaTable[11][16]['B-N']
 g0.intensity[0] = 100.
-print g0, ' <- set photon emission probability to 100% (photon is emitted if decay happens)\n'
-
-# beta- decay of Na-27 accidently seperated in two decays in parsing procedure
-g0 = gammaEmissionTable[11][16][0]
-g1 = gammaEmissionTable[11][16][2]
-g0.combine(g1)
-print g0, ' <- combine accidently seperated beta- decays\n'
-print g1, ' <- remove second beta- decay\n'
-gammaEmissionTable[11][16].remove(g1)
+print g0, ' <- set photon emission probability to 100%\n'
 
 # renormalize emission probability for beta+ decay of K-40 (BR = 10.86%, intensity = 10.66% -> emission prob if decay happens = 98.16%)
-g0 = gammaEmissionTable[19][21][0]
+g0 = gammaTable[19][21]['EC']
 g0.intensity[0] = 98.16
-print g0, ' <- renormalize photon emission probability to 98.16% (photon emitted to 98.16% if decay happens)\n'
+print g0, ' <- renormalize photon emission probability to 98.16%\n'
 
 # remove one of two tabulated beta- decays for K-46
-g0 = gammaEmissionTable[19][27][0]
+g0 = gammaTable[19][27]['B-']
 print g0,'\n'
 takeIndex = [2,3,4,7,9,11]
 energy = []
 intensity = []
-for index in takeIndex:
-    energy.append(g0.energy[index])
-    intensity.append(g0.intensity[index])
+for i in takeIndex:
+    energy.append(g0.energy[i])
+    intensity.append(g0.intensity[i])
 g0.intensity = intensity
 g0.energy = energy
 print g0, ' <- removed additional beta- decay with same properties\n'
 
 # for beta- and beta+ decay of V-50 emission probability of photon is 100% if decay happens
-g0 = gammaEmissionTable[23][27][0]
-g1 = gammaEmissionTable[23][27][1]
+g0 = gammaTable[23][27]['B-']
+g1 = gammaTable[23][27]['EC']
 g0.intensity[0] = 100.
 g1.intensity[0] = 100.
-print g0, ' <- set photon emission probability to 100% (photon is emitted if decay happens)\n'
-print g1, ' <- set photon emission probability to 100% (photon is emitted if decay happens)\n'
+print g0, ' <- set photon emission probability to 100%\n'
+print g1, ' <- set photon emission probability to 100%\n'
 
-### parse data file
-print '\nParsing data file'
+
+### parse decay data file
+print '\nParsing decay data file'
 print '-------------------------------------'
 fin = open('tables/decay_NuDat2.txt')
 lines = fin.readlines()
@@ -184,26 +150,18 @@ decayTable = [[[] for n in range(31)] for z in range(27)]
 for line in lines[1:-3]:
     d = Decay()
     d.load(line)
-    # skip if Z > 26 (Fe-56)
-    if d.Z > 26:
+    if (d.Z > 26) or (d.N > 30):
         continue
-    # skip if N > 30 (Fe-56)
-    if d.N > 30:
-        continue
-    # skip if isomeric transition
     if d.mode == 'IT':
         print d, '<- skip (isomeric transition)'
         continue
-    # skip if lifetime missing
     if d.tau == 0:
         print d, '<- skip (missing lifetime)'
         continue
-    # skip if decay mode missing
     if d.mode == '':
         if not(d.isStable()):
             print d, '<- skip (missing decay mode)'
             continue
-    # else store in decay table
     decayTable[d.Z][d.N].append(d)
 
 
@@ -390,7 +348,7 @@ modeDict = {'STABLE' : '0',
         'B-' : '10000',
         '2B-': '20000',
         'BN' : '10001',
-				'B-N': '10001',
+        'B-N': '10001',
         'B2N': '10002',
         'B3N': '10003',
         'B4N': '10004',
@@ -406,26 +364,27 @@ modeDict = {'STABLE' : '0',
         'E2P': '01020',
         'E3P': '01030'}
 
-for z in range(0,27):
-    for n in range(0,31):
-        if (z + n)==0:
+for Z in range(27):
+    for N in range(31):
+        if (Z + N) == 0:
             continue
 
-        for d in decayTable[z][n]:
-            # skip stable
-            if d.tau == inf:
+        for d in decayTable[Z][N]:
+            if d.isStable():
                 continue
-            if not gammaEmissionTable[z][n]:
-                fout.write('%i %i %s %e\n'%(d.Z, d.N, modeDict[d.mode], d.tau))
-            else:
-                s = '%i %i %s %e'%(d.Z, d.N, modeDict[d.mode], d.tau)
-                for g in gammaEmissionTable[z][n]:
-                    if modeDict[d.mode] != modeDict[g.mode]:
-                        continue
-                    for i in range(0,len(g.energy)):
-                        s += ' %e %e'%(g.energy[i],g.intensity[i]/100.)
-                s += '\n'
-                fout.write(s)
+
+            mode = modeDict[d.mode]
+            s = '%i %i %s %e' % (Z, N, mode, d.tau)
+
+            for key in gammaTable[Z][N].keys():
+                if modeDict[key] != mode:
+                    continue
+
+                g = gammaTable[Z][N][key]
+                for i in range(len(g.energy)):
+                    s += ' %e %e'%(g.energy[i], g.intensity[i]/100.)
+
+            fout.write(s + '\n')
 
 fout.close()
 
