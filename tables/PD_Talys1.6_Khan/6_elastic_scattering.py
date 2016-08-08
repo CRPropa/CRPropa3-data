@@ -2,7 +2,6 @@ from numpy import *
 import os
 import time
 
-
 # list of isotopes (Z <= 26, A <= 30, lifetime > )
 isotopes_part1 = genfromtxt('../PD_external/isotopes.txt') # note: TALYS can not process H, He
 isotopes_part2 = genfromtxt('isotopes.txt')
@@ -43,19 +42,16 @@ s += 'element %s    \n' # target element
 s += 'mass %i       \n' # target mass number
 s += 'strength 1    \n' # GDR parameterization (E1 strength function): 1 = Kopecky-Uhl / generalized Lorentzian
 s += 'gnorm 1.0     \n' # GDR normalization factor
-s += 'channels y    \n' # write exclusive cross-sections output files
+s += 'channels n    \n' # don't write exclusive cross-sections output files
 s += 'maxchannel 8  \n' # maximum number of emitted particles per for which output files are written
 s += 'isomer 1.e38  \n' # don't consider isomers separately
 s += 'fileresidual n\n' # don't write residual production output files
-s += 'outgamdis y   \n' # write photon emission output files 
 
 
-# incident photon energies: 0.2 - 200 MeV in steps of dlogE = 0.01
-eps = logspace(log10(0.2), log10(200), 301)
-savetxt('eps.txt', eps, fmt='%.6g')
-path = os.getcwd() + '/eps.txt'
-
-
+# incident photon energies: 0.002 - 200 MeV in steps of dlogE = 0.01
+eps = logspace(log10(0.002), log10(200), 501)
+savetxt('eps_elastic.txt', eps, fmt='%.6g')
+path = os.getcwd() + '/eps_elastic.txt'
 
 for (Z,N,A) in isotopes:
     print Z, N
@@ -68,10 +64,32 @@ for (Z,N,A) in isotopes:
         pass
 
     os.chdir(folder)
+    os.mkdir('elastic_scattering')
+    os.chdir('elastic_scattering')
 
     f = open('input', 'w')
     f.write(s % (path,elements[Z], A))
     f.close()
 
     os.system('talys < input > output')
-    os.chdir('..')
+    os.chdir('../..')
+
+# -----------------------------------------------
+# Collect all cross sections for elastic scattering from TALYS
+# -----------------------------------------------
+
+fexcl = open('xs_elastic.txt', 'w')
+fexcl.write('# Z\tN\txs\n')
+fexcl.write('#cross sections [mb] for incident photon energies eps = 0.002 - 200 MeV in steps of logE = 0.01\n')
+fmt = '%i\t%i' + '\t%.4g'*501 + '\n'  # output format
+
+for (Z,N,A) in isotopes:
+    print Z, N
+    folder = '%i-%i/elastic_scattering/' % (Z, A)
+    if not (os.path.exists(folder + "elastic.tot")):
+        print "no elastic scattering data"
+        continue
+    xs = genfromtxt(folder + "elastic.tot", usecols=1)
+    fexcl.write( fmt % ((Z, N) + tuple(xs)) )
+
+fexcl.close()
