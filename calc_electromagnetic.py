@@ -45,7 +45,7 @@ def sigmaDPP(s):
 # Interaction rates
 # ----------------------------------------------------------------
 def saveRate(E, sigma, skin, field, name):
-    s = skin.copy()  
+    s = skin.copy()
     if (name == 'EMInverseComptonScattering' or name == 'EMTripletPairProduction'):
       s += me2 * eV**2
     xs   = array([sigma(si) for si in s])
@@ -57,9 +57,9 @@ def saveRate(E, sigma, skin, field, name):
     savetxt(fname, data, fmt=fmt, header=header)
 
 # Mandelstam s - (mc^2)^2
-# important: tabulate skin in logspace and add resp. mass term to obtain s 
+# important: tabulate skin in logspace and add resp. mass term to obtain s
 # because the integration carried out requires logspaced skin values.
-# Otherwise (logspace s from mass term to 10**23 eV and subtract mass term 
+# Otherwise (logspace s from mass term to 10**23 eV and subtract mass term
 # to obtain skin) skin is not logspaced for small values.
 skin1 = logspace(-28, log10(10**23*eV**2), 1025)  # photons
 skin2 = logspace(-28, log10((10**23 - me2)*eV**2), 1025)  # electrons
@@ -88,9 +88,9 @@ for field in fields:
 # Cumulative differential interaction rates
 # ----------------------------------------------------------------
 def saveCDF(E, sigma, skin, field, name):
-    s = skin.copy()  
-    if (name == 'EMInverseComptonScattering_CDF' or name == 'EMTripletPairProduction_CDF'):
-      s += me2 * eV**2
+    s = skin.copy()
+    if name in ('EMInverseComptonScattering_CDF', 'EMTripletPairProduction_CDF'):
+        s += me2 * eV**2
     xs   = array([sigma(si) for si in s])
     rate = iR.integrant_simple(skin, xs, E, field)
     lE = repeat(log10(E/eV), len(skin))
@@ -123,9 +123,9 @@ for field in fields:
 
 
 # consider different s-range for URB
-# important: tabulate skin in logspace and add resp. mass term to obtain s 
+# important: tabulate skin in logspace and add resp. mass term to obtain s
 # because the integration carried out requires logspaced skin values.
-# Otherwise (logspace s from mass term to 10**23 eV and subtract mass term 
+# Otherwise (logspace s from mass term to 10**23 eV and subtract mass term
 # to obtain skin) skin is not logspaced for small values.
 field = photonField.URB_Protheroe96()
 skin1 = logspace(-28, log10(1e17 * eV**2), 500)
