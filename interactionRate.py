@@ -45,7 +45,7 @@ def invMFP(teps, txs, gamma, field):
     return rate * Mpc / (2 * gamma**2)
 
 
-def invMFP_fast(eps, xs, gamma, field):
+def invMFP_fast(eps, xs, gamma, field, z=0):
     """
     Calculate the inverse mean free path for given tabulated
     cross sections against an isotropic photon background:
@@ -61,7 +61,7 @@ def invMFP_fast(eps, xs, gamma, field):
     Returns : inverse mean free path [1/Mpc]
     """
     F = integrate.cumtrapz(x=eps, y=eps*xs, initial=0) / eps
-    n = field.getDensity( np.outer(1 / (2 * gamma), eps) )
+    n = field.getDensity( np.outer(1 / (2 * gamma), eps), z )
     dx = np.mean(np.diff(np.log(eps)))  # average log-spacing
     return integrate.romb(n * F, dx=dx) * Mpc / gamma
 
