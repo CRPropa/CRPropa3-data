@@ -6,7 +6,9 @@ from numpy import *
 # for any photon energy
 # -------------------------------------------------
 
-isotopes = genfromtxt('isotopes.txt', dtype=int)
+isotopes_part1 = genfromtxt('../PD_external/isotopes.txt') # note: TALYS can not process H, He
+isotopes_part2 = genfromtxt('isotopes.txt')
+isotopes = vstack((isotopes_part1, isotopes_part2))
 d = genfromtxt('xs_excl.txt')
 s = ones(len(d), dtype=bool)
 print 'done reading'

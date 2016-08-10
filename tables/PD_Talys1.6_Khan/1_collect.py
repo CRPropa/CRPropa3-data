@@ -15,10 +15,10 @@ def isBogus(Z, N, channel):
     if (dZ + dN) == (Z + N):
         print '    no nucleon left:', channel
         return True
-    if dZ > dZ:
+    if dZ > Z:
         print '    too many protons lost:', channel
         return True
-    if dN > dN:
+    if dN > N:
         print '    too many neutrons lost:', channel
         return True
     return False
@@ -29,7 +29,9 @@ fexcl.write('# Z\tN\tchannel\txs\n')
 fexcl.write('#cross sections [mb] for incident photon energies eps = 0.2 - 200 MeV in steps of logE = 0.01\n')
 fmt = '%i\t%i\t%s' + '\t%.4g'*301 + '\n'  # output format
 
-isotopes = genfromtxt('isotopes.txt', dtype=int)
+isotopes_part1 = genfromtxt('../PD_external/isotopes.txt') # note: TALYS can not process H, He
+isotopes_part2 = genfromtxt('isotopes.txt')
+isotopes = vstack((isotopes_part1, isotopes_part2))
 
 for (Z,N,A) in isotopes:
     print Z, N
