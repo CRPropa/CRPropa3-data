@@ -6,7 +6,8 @@ Tools to generate the interaction and nuclear data for [CRPropa 3](https://githu
 Interactions between cosmic ray nuclei and background photons
  - calc_epp.py : electron pair production
  - calc_ppp.py : photo-pion production
- - calc_photodisintegration.py  : photodisintegration
+ - calc_photodisintegration.py : photodisintegration
+ - calc_elasticscattering.py   : elastic scattering on the nuclear structure
 
 Interactions between cosmic ray photons / electrons and background photons
  - calc_electromagnetic.py
