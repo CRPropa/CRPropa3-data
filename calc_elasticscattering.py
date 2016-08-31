@@ -37,7 +37,7 @@ for field in fields:
     print field.name
 
     # Calculate the interaction rate, averaged over all isotopes
-    rate = mean([iR.invMFP_fast(eps, x, gamma, field) for x in xs], axis=0)
+    rate = mean([iR.calc_rate_eps(eps, x, gamma, field) for x in xs], axis=0)
 
     savetxt('data/ElasticScattering_%s.txt' % field.name, rate, fmt='%g',
         header='Average interaction rate for elastic scattering of %s photons off nuclei\nScale with Z*N/A for nuclei\n1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps' % field.info)
@@ -45,7 +45,7 @@ for field in fields:
     # Calculate CDF for background photon energies, averaged over all isotopes
     CDF = zeros((len(gamma), len(eps)))
     for x in xs:
-        C = iR.cumulative_rate_gamma_eps(eps, x, gamma, field)
+        C = iR.calc_diffrate_eps(eps, x, gamma, field)
         CDF += C / amax(C, axis=1)[:,newaxis]
     CDF /= len(data)
     CDF = nan_to_num(CDF)

@@ -1,5 +1,5 @@
 from numpy import *
-import interactionRate as iR
+import interactionRate
 import photonField
 
 
@@ -44,12 +44,14 @@ def sigmaDPP(s):
 # ----------------------------------------------------------------
 # Interaction rates
 # ----------------------------------------------------------------
+print ('Calculate interaction rates')
+
 def saveRate(E, sigma, skin, field, name):
     s = skin.copy()
     if (name == 'EMInverseComptonScattering' or name == 'EMTripletPairProduction'):
       s += me2 * eV**2
     xs   = array([sigma(si) for si in s])
-    rate = iR.rate(skin, xs, E, field)
+    rate = interactionRate.calc_rate_s(skin, xs, E, field)
     data = c_[log10(E / eV), rate]
     fname  = 'data/%s_%s.txt' % (name, field.name)
     header = 'log10(E/eV)\t1/lambda [1/Mpc]\n%s\n' % field.info
@@ -77,7 +79,7 @@ fields = [
     ]
 
 for field in fields:
-    print field.name
+    print (field.name)
     saveRate(E, sigmaPP,  skin1, field, 'EMPairProduction')
     saveRate(E, sigmaDPP, skin1, field, 'EMDoublePairProduction')
     saveRate(E, sigmaICS, skin2, field, 'EMInverseComptonScattering')
@@ -87,12 +89,14 @@ for field in fields:
 # ----------------------------------------------------------------
 # Cumulative differential interaction rates
 # ----------------------------------------------------------------
+print ('Calculate cumulative differential interaction rates')
+
 def saveCDF(E, sigma, skin, field, name):
     s = skin.copy()
     if name in ('EMInverseComptonScattering_CDF', 'EMTripletPairProduction_CDF'):
         s += me2 * eV**2
     xs   = array([sigma(si) for si in s])
-    rate = iR.integrant_simple(skin, xs, E, field)
+    rate = interactionRate.calc_diffrate_s(skin, xs, E, field)
     lE = repeat(log10(E/eV), len(skin))
     ls = repeat(log10(skin/eV**2)[newaxis,:], len(E), axis=0).flatten()
     data = c_[lE, ls, rate]
@@ -116,7 +120,7 @@ fields = [
     ]
 
 for field in fields:
-    print field.name
+    print (field.name)
     saveCDF(E, sigmaPP,  skin1, field, 'EMPairProduction_CDF')
     saveCDF(E, sigmaICS, skin2, field, 'EMInverseComptonScattering_CDF')
     saveCDF(E, sigmaTPP, skin2, field, 'EMTripletPairProduction_CDF')

@@ -32,8 +32,8 @@ fields = [
 for field in fields:
     print field
 
-    r1 = interactionRate.invMFP_fast(eps1, xs1, gamma, field)
-    r2 = interactionRate.invMFP_fast(eps2, xs2, gamma, field)
+    r1 = interactionRate.calc_rate_eps(eps1, xs1, gamma, field)
+    r2 = interactionRate.calc_rate_eps(eps2, xs2, gamma, field)
 
     fname = 'data/ppp_%s.txt' % field.name
     data  = c_[lgamma, r1, r2]
@@ -55,8 +55,8 @@ for field in fields:
 
     data = []
     for z in redshifts:
-        r1 = interactionRate.invMFP_fast(eps1, xs1, gamma, field, z)
-        r2 = interactionRate.invMFP_fast(eps2, xs2, gamma, field, z)
+        r1 = interactionRate.calc_rate_eps(eps1, xs1, gamma, field, z)
+        r2 = interactionRate.calc_rate_eps(eps2, xs2, gamma, field, z)
         data.append( c_[[z]*len(lgamma), lgamma, r1, r2] )
 
     data = concatenate( [d for d in data], axis=0 )

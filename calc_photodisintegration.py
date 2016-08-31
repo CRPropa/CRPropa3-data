@@ -1,6 +1,6 @@
 from numpy import *
 import photonField
-import interactionRate as iR
+import interactionRate
 
 
 eV = 1.60217657e-19
@@ -14,9 +14,9 @@ eps = genfromtxt(ddir1 + 'eps.txt')
 d1sum = genfromtxt(ddir1 + 'xs_sum.txt', dtype=[('Z',int), ('N',int), ('xs','%if8'%len(eps))])
 d1exc = genfromtxt(ddir1 + 'xs_excl.txt', dtype=[('Z',int), ('N',int), ('ch',int), ('xs','%if8'%len(eps))])
 # Pad cross sections to next larger 2^n + 1 tabulation points for Romberg integration and convert to SI units
-eps1 = iR.romb_pad_logspaced(eps, 513) * eV * 1e6
-xs1sum = array([iR.romb_pad_zero(x, 513) for x in d1sum['xs']]) * 1e-31
-xs1exc = array([iR.romb_pad_zero(x, 513) for x in d1exc['xs']]) * 1e-31
+eps1 = interactionRate.romb_pad_logspaced(eps, 513) * eV * 1e6
+xs1sum = array([interactionRate.romb_pad_zero(x, 513) for x in d1sum['xs']]) * 1e-31
+xs1exc = array([interactionRate.romb_pad_zero(x, 513) for x in d1exc['xs']]) * 1e-31
 
 
 # Load cross sections for A >= 12 (TALYS)
@@ -29,9 +29,9 @@ d2exc = genfromtxt(ddir2+'xs_pd_thin.txt', dtype=[('Z',int), ('N',int), ('ch',in
 d2sum = d2sum[(d2sum['Z'] + d2sum['N']) >= 12]
 d2exc = d2exc[(d2exc['Z'] + d2exc['N']) >= 12]
 # Pad cross sections to next larger 2^n + 1 tabulation points for Romberg integration and convert to SI units
-eps2 = iR.romb_pad_logspaced(eps, 513) * eV * 1e6
-xs2sum = array([iR.romb_pad_zero(x, 513) for x in d2sum['xs']]) * 1e-31
-xs2exc = array([iR.romb_pad_zero(x, 513) for x in d2exc['xs']]) * 1e-31
+eps2 = interactionRate.romb_pad_logspaced(eps, 513) * eV * 1e6
+xs2sum = array([interactionRate.romb_pad_zero(x, 513) for x in d2sum['xs']]) * 1e-31
+xs2exc = array([interactionRate.romb_pad_zero(x, 513) for x in d2exc['xs']]) * 1e-31
 
 
 # Load cross sections with photon emission
@@ -39,8 +39,8 @@ d3sum = genfromtxt(ddir2+'xs_photon_sum.txt', dtype=[('Z',int), ('N',int), ('Zd'
 d3exc = genfromtxt(ddir2+'xs_photon_thin.txt', dtype=[('Z',int), ('N',int), ('Zd',int), ('Nd',int), ('Ephoton',float), ('xs','%if8'%len(eps))])
 # Pad cross sections to next larger 2^n + 1 tabulation points for Romberg integration and convert to SI units
 eps3 = eps2
-xs3sum = array([iR.romb_pad_zero(x, 513) for x in d3sum['xs']]) * 1e-31
-xs3exc = array([iR.romb_pad_zero(x, 513) for x in d3exc['xs']]) * 1e-31
+xs3sum = array([interactionRate.romb_pad_zero(x, 513) for x in d3sum['xs']]) * 1e-31
+xs3exc = array([interactionRate.romb_pad_zero(x, 513) for x in d3exc['xs']]) * 1e-31
 
 
 
@@ -58,8 +58,8 @@ for field in fields:
     print (field.name)
 
     # Calculate total interaction rates
-    R1 = array([iR.invMFP_fast(eps1, x, gamma, field) for x in xs1sum])
-    R2 = array([iR.invMFP_fast(eps2, x, gamma, field) for x in xs2sum])
+    R1 = array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1sum])
+    R2 = array([interactionRate.calc_rate_eps(eps2, x, gamma, field) for x in xs2sum])
 
     savetxt('data/pd_%s.txt' % field.name,
         r_[c_[d1sum['Z'], d1sum['N'], R1], c_[d2sum['Z'], d2sum['N'], R2]],
@@ -68,8 +68,8 @@ for field in fields:
 
 
     # Calculate branching ratios from exclusive interaction rates
-    B1 = array([iR.invMFP_fast(eps1, x, gamma, field) for x in xs1exc])
-    B2 = array([iR.invMFP_fast(eps2, x, gamma, field) for x in xs2exc])
+    B1 = array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1exc])
+    B2 = array([interactionRate.calc_rate_eps(eps2, x, gamma, field) for x in xs2exc])
     for (Z, N, A) in isotopes1:
         s = (d1exc['Z'] == Z) * (d1exc['N'] == N)
         B1[s] /= sum(B1[s], axis=0)
@@ -86,8 +86,8 @@ for field in fields:
 
 
     # Calculate photon emission probabilities
-    R3 = array([iR.invMFP_fast(eps3, x, gamma, field) for x in xs3sum])
-    B3 = array([iR.invMFP_fast(eps3, x, gamma, field) for x in xs3exc])
+    R3 = array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3sum])
+    B3 = array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3exc])
     for i in range(len(d3sum)):
         s = (d3exc['Z'] == d3sum['Z'][i]) * (d3exc['N'] == d3sum['N'][i]) * (d3exc['Zd'] == d3sum['Zd'][i]) * (d3exc['Nd'] == d3sum['Nd'][i])
         B3[s] /= R3[i]
