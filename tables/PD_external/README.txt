@@ -13,7 +13,7 @@ Overview:
 
 
 Changes:
-- He-6 and Li-9, which are present in the CRPropa 2.0 release were removed, because the life-time is smaller than 1.2 seconds, rendering photonuclear interactions negligible
+- He-6, Li-8, Li-9 and B-5 which are present in the CRPropa 2.0 release were removed, because the life-time is smaller than 2 seconds, rendering photonuclear interactions negligible
 - Li-6 is now also taken from [4] instead of from TALYS, modeling the loss of protons and neutrons with equal probability
 
 
