@@ -53,7 +53,6 @@ fields = [
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12()]
 
-
 for field in fields:
     print (field.name)
 
@@ -65,7 +64,6 @@ for field in fields:
         r_[c_[d1sum['Z'], d1sum['N'], R1], c_[d2sum['Z'], d2sum['N'], R2]],
         fmt='%i\t%i' + '\t%g'*201,
         header='Photodisintegration by the %s\nZ, N, 1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps' % field.info)
-
 
     # Calculate branching ratios from exclusive interaction rates
     B1 = array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1exc])
@@ -85,7 +83,11 @@ for field in fields:
         header='Photo-disintegration with the %s\nZ, N, channel, branching ratio for log10(gamma) = 6-14 in 201 steps' % field.info)
 
 
-    # Calculate photon emission probabilities
+
+# Calculate photon emission probabilities
+for field in [photonField.CMB(), photonField.EBL_Gilmore12()]:
+    print (field.name)
+
     R3 = array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3sum])
     B3 = array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3exc])
     for i in range(len(d3sum)):
@@ -93,7 +95,7 @@ for field in fields:
         B3[s] /= R3[i]
     B3 = nan_to_num(B3)
 
-    savetxt('data/pd_photon_emission_%s.txt' % field.name,
+    savetxt('data/pd_photon_emission_%s.txt' % field.name.split('_')[0],
         c_[d3exc['Z'], d3exc['N'], d3exc['Zd'], d3exc['Nd'], d3exc['Ephoton']*1e6, B3],
         fmt='%i\t%i\t%i\t%i\t%g' + '\t%g'*201,
         header='Emission probabilities of photons with discrete energies via photo-disintegration with the %s\nZ, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps' % field.info)

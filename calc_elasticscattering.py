@@ -24,22 +24,14 @@ eps = iR.romb_pad_logspaced(eps, 513)
 xs  = array([iR.romb_pad_zero(x, 513) for x in data['xs']]) * 1e-31
 
 
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12()]
-
-for field in fields:
-    print field.name
+for field in [photonField.CMB(), photonField.EBL_Gilmore12()]:
+    print (field.name)
 
     # Calculate the interaction rate, averaged over all isotopes
     rate = mean([iR.calc_rate_eps(eps, x, gamma, field) for x in xs], axis=0)
 
-    savetxt('data/ElasticScattering_%s.txt' % field.name, rate, fmt='%g',
+    savetxt('data/ElasticScattering_%s.txt' % field.name.split('_')[0],
+        rate, fmt='%g',
         header='Average interaction rate for elastic scattering of %s photons off nuclei\nScale with Z*N/A for nuclei\n1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps' % field.info)
 
     # Calculate CDF for background photon energies, averaged over all isotopes
@@ -50,7 +42,7 @@ for field in fields:
     CDF /= len(data)
     CDF = nan_to_num(CDF)
 
-    savetxt('data/ElasticScattering_CDF_%s.txt' % field.name,
+    savetxt('data/ElasticScattering_CDF_%s.txt' % field.name.split('_')[0],
         c_[log10(gamma), CDF],
         fmt='%g' + '\t%g'*len(eps),
         header='# Average CDF(background photon energy) for elastic scattering with the %s\n# log10(gamma), (1/lambda)_cumulative for eps = log10(2 keV) - log10(263 MeV) in 513 steps' % field.info)
