@@ -335,7 +335,7 @@ for z in range(0,27):
 
 ### save decay table
 fout = open('data/nuclear_decay.txt','w')
-fout.write('# Z, N, Mean Life Time [s], Decay Mode (#beta- #beta+ #alpha #p #n), Gamma Energy 1 [keV], Gamma Emission Probability 1, Gamma Energy 2 [keV], Gamma Emission Probability 2, ...\n')
+fout.write('# Z, N, Decay Mode (#beta- #beta+ #alpha #p #n), Mean Life Time [s], Gamma Energy 1 [keV], Gamma Emission Probability 1, Gamma Energy 2 [keV], Gamma Emission Probability 2, ...\n')
 
 # decay mode codes: #beta- #beta+ #alpha #p #n
 modeDict = {'STABLE' : '0',
