@@ -39,7 +39,7 @@ Aunique = unique(A)
 xs_sum_daughter = array([sum(xs[ravel(a == A)], axis=0) for a in Aunique])
 
 savetxt('xs_photon_sum.txt',
-    c_[Aunique.view(float).reshape(Aunique.shape + (-1,)), xs_sum_daughter],
+    c_[Aunique.view(int).reshape(Aunique.shape + (-1,)), xs_sum_daughter],
     fmt='%i\t%i\t%i\t%i' + '\t%g'*301,
     header='Total disintegration cross section from (Z,N) to (Zd,Nd)\nZ\tN\tZ_daughter\tN_daughter\tEgamma [MeV]\txs [mb] for eps = 0.2 - 200 MeV in steps of logE = 0.01')
 

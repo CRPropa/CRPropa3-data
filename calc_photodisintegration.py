@@ -83,7 +83,6 @@ for field in fields:
         header='Photo-disintegration with the %s\nZ, N, channel, branching ratio for log10(gamma) = 6-14 in 201 steps' % field.info)
 
 
-
 # Calculate photon emission probabilities
 for field in [photonField.CMB(), photonField.EBL_Gilmore12()]:
     print (field.name)
