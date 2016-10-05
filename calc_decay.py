@@ -307,6 +307,22 @@ for Z in range(27):
             print d, ' <- beta+ correction %.1e'%f
             d.tau *= 1 + f
 
+            # remove gamma decays which are not possible in beta+ decays
+            try:
+                g = gammaTable[Z][N]['EC']
+            except:
+                continue  # no gamma entry
+            for i, Egamma in enumerate(g.energy):
+                Egamma *= crp.keV
+                if Egamma > Qbeta:
+                    print d, ' <- remove gamma decay (Egamma %g < %g = Q)' % (Egamma, Qbeta)
+                    g.energy.pop(i)
+                    g.intensity.pop(i)
+            if len(g.energy) == 0:
+                gammaTable[Z][N].pop('EC')
+
+
+
 
 ### set immediate proton / neutron dripping for all other isotopes
 print '\n\nSet proton / neutron dripping for all other isotopes'
