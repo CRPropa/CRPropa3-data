@@ -70,7 +70,7 @@ class EBL:
 class EBL_Kneiske04(EBL):
     name = 'IRB_Kneiske04'
     info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
-    files = datadir+'IRO_Kneiske04/all_z'
+    files = datadir + 'EBL_Kneiske_2004/all_z'
     redshift = np.linspace(0, 5, 51)
 
     def __init__(self):
@@ -86,7 +86,7 @@ class EBL_Kneiske04(EBL):
 class EBL_Kneiske04_old(EBL):
     name = 'IRB_Kneiske04'
     info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
-    files = datadir+'IRO_Kneiske04/old/%.1f'
+    files = datadir + 'EBL_Kneiske_2004/old/%.1f'
     redshift = (0, 0.2, 0.4, 0.6, 1, 2, 3, 4)
 
     def __init__(self):
@@ -103,7 +103,7 @@ class EBL_Kneiske04_old(EBL):
 class EBL_Kneiske10(EBL):
     name = 'IRB_Kneiske10'
     info = 'cosmic infrared and optical background radiation lower limit model of Kneiske et al. 2010'
-    files = datadir+'IRO_Kneiske10/%.1f'
+    files = datadir + 'EBL_Kneiske_2010/%.1f'
     redshift = (0, .1, .3, .8, 2)
 
     def __init__(self):
@@ -120,7 +120,7 @@ class EBL_Kneiske10(EBL):
 class EBL_Dole06(EBL):
     name = 'IRB_Dole06'
     info = 'cosmic infrared and optical background radiation model of Dole et al. 2006'
-    files = datadir+'IRO_Dole06/0.0'
+    files = datadir + 'EBL_Dole_2006/0.0'
     redshift = (0)
 
     def __init__(self):
@@ -135,7 +135,7 @@ class EBL_Dole06(EBL):
 class EBL_Franceschini08(EBL):
     name = 'IRB_Franceschini08'
     info = 'cosmic infrared and optical background radiation model of Franceschini et al. 2008'
-    files = datadir+'IRO_Franceschini08/%1.1f'
+    files = datadir + 'EBL_Franceschini_2008/%1.1f'
     redshift = (0, .2, .4, .6, .8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)
 
     def __init__(self):
@@ -153,7 +153,7 @@ class EBL_Stecker05_old(EBL):
     # data file obtained from O. Kalashevs propation code, "does not include UV part"
     name = 'IRB_Stecker05'
     info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
-    files = datadir+'IRO_Stecker05/data1.txt'
+    files = datadir + 'EBL_Stecker_2005/data1.txt'
     redshift = np.linspace(0, 5, 26)
 
     def __init__(self):
@@ -170,7 +170,7 @@ class EBL_Stecker05_old(EBL):
 class EBL_Stecker05(EBL):
     name = 'IRB_Stecker05'
     info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
-    files = datadir+'IRO_Stecker05/data2.txt'
+    files = datadir + 'EBL_Stecker_2005/data2.txt'
     redshift = np.linspace(0, 5, 26)
 
     def __init__(self):
@@ -187,7 +187,7 @@ class EBL_Stecker05(EBL):
 class EBL_Finke10(EBL):
     name = 'IRB_Finke10'
     info = 'cosmic infrared and optical background radiation model of Finke et al. 2010 (Model C)'
-    files = datadir+'IRO_Finke10/z%.2f.dat'
+    files = datadir + 'EBL_Finke_2010/z%.2f.dat'
     redshift = np.arange(0, 5, 0.01)
 
     def __init__(self):
@@ -203,7 +203,7 @@ class EBL_Finke10(EBL):
 class EBL_Gilmore12(EBL):
     name = 'IRB_Gilmore12'
     info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (Evolving dust model, arXiv:1104.0671)'
-    files = datadir+'IRO_Gilmore12/eblflux_fiducial.dat'
+    files = datadir + 'EBL_Gilmore_2012/eblflux_fiducial.dat'
     redshift = np.array([0, 0.015, 0.025, 0.044, 0.05, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0])
 
     def __init__(self):
@@ -220,7 +220,7 @@ class EBL_Gilmore12(EBL):
 class EBL_Dominguez11(EBL):
     name = 'IRB_Dominguez11'
     info = 'cosmic infrared and optical background radiation model of Dominguez et al. 2011 (arXiv:1007.1459)'
-    files = datadir+'IRO_Dominguez11/ebl_dominguez11.out'
+    files = datadir + 'EBL_Dominguez_2011/ebl_dominguez11.out'
     redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
 
     def __init__(self):
@@ -236,7 +236,7 @@ class EBL_Dominguez11(EBL):
 class EBL_Dominguez11_upper(EBL):
     name = 'IRB_Dominguez11_upper'
     info = 'cosmic infrared and optical background radiation model of Dominguez et al. 2011 (arXiv:1007.1459)'
-    files = datadir+'IRO_Dominguez11/ebl_upper_uncertainties_dominguez11.out'
+    files = datadir + 'EBL_Dominguez_2011/ebl_upper_uncertainties_dominguez11.out'
     redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
 
     def __init__(self):
@@ -252,7 +252,7 @@ class EBL_Dominguez11_upper(EBL):
 class EBL_Dominguez11_lower(EBL):
     name = 'IRB_Dominguez11_lower'
     info = 'cosmic infrared and optical background radiation model of Dominguez et al. 2011 (arXiv:1007.1459)'
-    files = datadir+'IRO_Dominguez11/ebl_lower_uncertainties_dominguez11.out'
+    files = datadir + 'EBL_Dominguez_2011/ebl_lower_uncertainties_dominguez11.out'
     redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
 
     def __init__(self):
@@ -264,6 +264,7 @@ class EBL_Dominguez11_lower(EBL):
         n = d[1:] * 1e-9 / c0 * 4*np.pi / eps**2
         for i,z in enumerate(self.redshift):
             self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
+
 
 # --------------------------------------------------------
 # CRB (radio) models
@@ -305,7 +306,7 @@ class URB_Protheroe96:
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 0.825e-6 * eV
+        return 2E-6 * eV # 0.825e-6 * eV
 
 
 class CRB_ARCADE2:
