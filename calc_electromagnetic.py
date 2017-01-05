@@ -30,9 +30,10 @@ def sigmaDPP(s):
 def sigmaICS(s):
     """ Inverse Compton scattering cross sections, see Lee 1996 """
     smin = me2
-    if (s < smin):
+    if (s < smin):  # numerically unstable close to smin
         return 0
     else:
+        # note: formula unstable for (s - smin) / smin < 1E-5
         b = (s - smin) / (s + smin)
         A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
         B = (2 - 3 * b**2 - b**3) / b**2 * log((1 + b) / (1 - b))
@@ -55,17 +56,16 @@ def getTabulatedXS(sigma, skin):
     return False
 
 def getSmin(sigma):
-    """ Return minimum required s for interaction """
-    if sigma == sigmaPP:  return 4 * me2
-    if sigma == sigmaDPP: return 16 * me2
-    if sigma == sigmaTPP: return exp((218/27)/(28/9)) * me2
-    if sigma == sigmaICS: return me2
-    return False
+    """ Return minimum required s_kin = s - (mc^2)^2 for interaction """
+    return {sigmaPP  : 4 * me2,
+            sigmaDPP : 16 * me2,
+            sigmaTPP : exp((218/27)/(28/9)) * me2 - me2,
+            sigmaICS : 1E-9 * me2
+            }[sigma]
 
 def getEmin(sigma, field):
     """ Return minimum required cosmic ray energy for interaction *sigma* with *field* """
     return getSmin(sigma) / 4 / field.getEmax()
-
 
 def process(sigma, field, name):
     # output folder
@@ -98,27 +98,26 @@ def process(sigma, field, name):
     # calculate cumulative differential interaction rates for sampling s values
     # -------------------------------------------
     # find minimum value of s_kin
-    s_min1 = getSmin(sigma)  # s threshold for interaction
-    s_min2 = 4 * field.getEmin() * E[0]  # minimum achievable s in collision with background photon (at any tabulated E)
-    s_min = max(s_min1, s_min2)
-    s_kin_min = s_min - (me2 if sigma in (sigmaTPP, sigmaICS) else 0)  # convert s --> s_kin
+    skin1 = getSmin(sigma)  # s threshold for interaction
+    skin2 = 4 * field.getEmin() * E[0]  # minimum achievable s in collision with background photon (at any tabulated E)
+    skin_min = max(skin1, skin2)
 
     # tabulated values of s_kin = s - mc^2, limit to relevant range
     # Note: use higher resolution and then downsample
-    s_kin = logspace(10, 23, 1301) * eV**2
-    s_kin = s_kin[s_kin > s_kin_min]
+    skin = logspace(6.2, 23, 1680+1) * eV**2
+    skin = skin[skin > skin_min]
 
-    xs = getTabulatedXS(sigma, s_kin)    
-    rate = interactionRate.calc_diffrate_s(s_kin, xs, E, field)
+    xs = getTabulatedXS(sigma, skin)    
+    rate = interactionRate.calc_diffrate_s(skin, xs, E, field)
 
     # downsample
-    s_kin_save = logspace(10, 23, 261) * eV**2
-    s_kin_save = s_kin_save[s_kin_save > s_kin_min]
-    rate_save = array([interp(s_kin_save, s_kin, r) for r in rate])
+    skin_save = logspace(6.2, 23, 168+1) * eV**2
+    skin_save = skin_save[skin_save > skin_min]
+    rate_save = array([interp(skin_save, skin, r) for r in rate])
 
     # save
     data = c_[log10(E/eV), rate_save]  # prepend log10(E/eV) as first column
-    row0 = r_[0, log10(s_kin_save/eV**2)][newaxis,:]
+    row0 = r_[0, log10(skin_save/eV**2)][newaxis,:]
     data = r_[row0, data]  # prepend log10(s_kin/eV^2) as first row
     
     fname = folder + '/cdf_%s.txt' % field.name
@@ -144,5 +143,5 @@ for field in fields:
     print (field.name)
     process(sigmaPP,  field, 'EMPairProduction')
     process(sigmaDPP, field, 'EMDoublePairProduction')
-    process(sigmaICS, field, 'EMInverseComptonScattering')
     process(sigmaTPP, field, 'EMTripletPairProduction')
+    process(sigmaICS, field, 'EMInverseComptonScattering')

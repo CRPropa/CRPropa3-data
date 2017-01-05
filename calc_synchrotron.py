@@ -28,7 +28,7 @@ x = logspace(-6, 2, 801)
 cdf = synchrotron_function(x)
 lx = log10(x)
 data = c_[lx, cdf]
-fname  = 'data/synchrotron_spectrum.txt'
+fname  = 'data/Synchrotron/spectrum.txt'
 header = 'x\t: fraction synchrotron photon frequency to critical frequency\nlog10(x)\tCDF\n'
 fmt = '%.5e\t%.5e'
 savetxt(fname, data, fmt=fmt, header=header)

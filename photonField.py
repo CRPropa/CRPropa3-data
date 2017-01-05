@@ -211,7 +211,7 @@ class EBL_Dominguez11(EBL):
             self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
 
 class EBL_Stecker16(EBL):
-    def __init__(self, which = 'upper'):
+    def __init__(self, which='upper'):
         EBL.__init__(self)
 
         if which == 'upper':
@@ -299,16 +299,17 @@ if __name__ == '__main__':
     from pylab import *
     eps = logspace(-3, 1, 200) * eV
     x  = eps / eV
-    y1 = EBL_Kneiske04().getDensity(eps) * eps
-    y3 = EBL_Stecker05().getDensity(eps) * eps
-    y5 = EBL_Franceschini08().getDensity(eps) * eps
-    y6 = EBL_Finke10().getDensity(eps) * eps
-    y7 = EBL_Dominguez11().getDensity(eps) * eps
-    y8 = EBL_Gilmore12().getDensity(eps) * eps
-    y7up = EBL_Dominguez11('upper').getDensity(eps) * eps
-    y7lo = EBL_Dominguez11('lower').getDensity(eps) * eps
-    y9up = EBL_Stecker16('upper').getDensity(eps) * eps
-    y9lo = EBL_Stecker16('lower').getDensity(eps) * eps
+    c =  eps**2 / eV
+    y1   = c * EBL_Kneiske04().getDensity(eps)
+    y3   = c * EBL_Stecker05().getDensity(eps)
+    y5   = c * EBL_Franceschini08().getDensity(eps)
+    y6   = c * EBL_Finke10().getDensity(eps)
+    y7   = c * EBL_Dominguez11().getDensity(eps)
+    y8   = c * EBL_Gilmore12().getDensity(eps)
+    y7up = c * EBL_Dominguez11('upper').getDensity(eps)
+    y7lo = c * EBL_Dominguez11('lower').getDensity(eps)
+    y9up = c * EBL_Stecker16('upper').getDensity(eps)
+    y9lo = c * EBL_Stecker16('lower').getDensity(eps)
 
     figure()
     plot(x, y1, label='Kneiske 2004')
@@ -317,14 +318,14 @@ if __name__ == '__main__':
     plot(x, y6, label='Finke 2010')
     plot(x, y7, label='Dominguez 2011')
     plot(x, y8, label='Gilmore 2012')
-    fill_between(x, y7lo, y7up, facecolor='m', edgecolor='none', alpha=0.2, zorder=-1)
+    fill_between(x, y7lo, y7up, facecolor='m', edgecolor='none', alpha=0.2, zorder=-1, label='Dominguez 2011 (limits)')
     fill_between(x, y9lo, y9up, facecolor='g', edgecolor='none', alpha=0.2, zorder=-1, label='Stecker 2016 (limits)')
 
-    legend(loc='lower left', fontsize='smaller')
+    legend(loc='lower center', fontsize='x-small')
     loglog()
     grid()
-    ylim(1e1, 1e6)
-    ylabel('$\epsilon ~ dn/d\epsilon$ [1/m$^3$]')
+    # ylim(1e1, 2e6)
+    ylabel('$\epsilon^2 ~ dn/d\epsilon$ [eV/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('figures/EBL.png')
     show()

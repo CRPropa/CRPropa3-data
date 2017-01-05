@@ -78,7 +78,6 @@ def lossRate(gamma, field, z=0):
 # Generate tables for energy loss rate
 # -------------------------------------------------
 gamma = logspace(6, 14, 161)  # tabulated Lorentz factors
-fname = 'data/epp_%s.txt'
 
 fields = [
     photonField.CMB(),
@@ -88,14 +87,16 @@ fields = [
     photonField.EBL_Finke10(),
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
+    photonField.EBL_Stecker16('upper'),
+    photonField.EBL_Stecker16('lower'),
     ]
 
 for field in fields:
-    print field.name
+    print(field.name)
     rate = lossRate(gamma, field)[0]
     s = (rate > 1e-12)  # truncate if loss rate is < 10^-12 / Mpc
 
-    fname  = 'data/epp_%s.txt' % field.name
+    fname  = 'data/ElectronPairProduction/lossrate_%s.txt' % field.name
     data   = c_[log10(gamma[s]), rate[s]]
     fmt    = '%.2f\t%.6e'
     header = 'Loss rate for electron-pair production with the %s\nlog10(gamma)\t1/gamma dgamma/dx [1/Mpc]' % field.info
@@ -120,5 +121,5 @@ A3 = A2 - A1  # IRB only
 # A3 = (A3.T / sum(A3, axis=1)).T
 
 # save
-savetxt('data/epp_spectrum_CMB.txt', A1, fmt='%.5e')
-savetxt('data/epp_spectrum_IRB.txt', A3, fmt='%.5e')
+savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
+savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')

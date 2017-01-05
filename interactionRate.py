@@ -31,7 +31,7 @@ def calc_rate_s(s_kin, xs, E, field):
     1/lambda = 1/(2E) * \int n((smax-m^2)/(4E)) / (smax-m^2) F(smax-m^2) dln(smax-m^2)
     F(smax-m^2) = \int_{smin-m^2}^{smax-m^2} sigma(s) (s - m^2) d(s-m^2)
     s = 2E eps (1 - cos(theta)) + m^2
-    smax = 4E*eps + m^2
+    smax = 4*E*eps + m^2
     smin = m^2
 
     s_kin : tabulated (s - m**2) for cross sections [J^2]
@@ -64,7 +64,7 @@ def calc_diffrate_eps(eps, xs, gamma, field):
     # return integrate.cumtrapz(x=s_kin, y=y, initial=0)
     F = integrate.cumtrapz(x=eps, y=eps*xs, initial=0)
     n = field.getDensity(np.outer(1./(2*gamma), eps))
-    y = n * F / eps**2 / gamma[:,np.newaxis] / *Mpc
+    y = n * F / eps**2 / gamma[:,np.newaxis] * Mpc
     return integrate.cumtrapz(x=eps, y=y, initial=0)
 
 def calc_diffrate_s(s_kin, xs, E, field):
