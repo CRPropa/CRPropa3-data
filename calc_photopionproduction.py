@@ -1,12 +1,12 @@
-from numpy import *
+import numpy as np
 import interactionRate
 import photonField
 import os
 
 
 eV = 1.60217657e-19
-lgamma = linspace(6, 16, 251)  # tabulated Lorentz factors
-gamma  = 10**lgamma
+lgamma = np.linspace(6, 16, 251)  # tabulated Lorentz factors
+gamma = 10**lgamma
 
 fields = [
     photonField.CMB(),
@@ -17,21 +17,20 @@ fields = [
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower'),
-    ]
+    photonField.EBL_Stecker16('lower')]
 
 
 # ----------------------------------------------------
 # Load proton / neutron cross sections [1/m^2] for tabulated energies [J]
 # truncate to largest length 2^i + 1 for Romberg integration
 # ----------------------------------------------------
-d = genfromtxt('tables/PPP/xs_proton.txt', unpack=True)
-eps1 = d[0,:2049] * 1e9 * eV  # [J]
-xs1  = d[1,:2049] * 1e-34  # [m^2]
+d = np.genfromtxt('tables/PPP/xs_proton.txt', unpack=True)
+eps1 = d[0, :2049] * 1e9 * eV  # [J]
+xs1 = d[1, :2049] * 1e-34  # [m^2]
 
-d = genfromtxt('tables/PPP/xs_neutron.txt', unpack=True)
-eps2 = d[0,:2049] * 1e9 * eV  # [J]
-xs2  = d[1,:2049] * 1e-34  # [m^2]
+d = np.genfromtxt('tables/PPP/xs_neutron.txt', unpack=True)
+eps2 = d[0, :2049] * 1e9 * eV  # [J]
+xs2 = d[1, :2049] * 1e-34  # [m^2]
 
 
 for field in fields:
@@ -49,11 +48,11 @@ for field in fields:
     r2 = interactionRate.calc_rate_eps(eps2, xs2, gamma, field)
 
     fname = folder + '/rate_%s.txt' % field.name
-    data  = c_[lgamma, r1, r2]
-    fmt   = '%.2f\t%.6e\t%.6e'
+    data = np.c_[lgamma, r1, r2]
+    fmt = '%.2f\t%.6e\t%.6e'
     header = ("Photo-pion interaction rate with the %s\nlog10(gamma)"
-              "\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]"%field.info)
-    savetxt(fname, data, fmt=fmt, header=header)
+              "\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
+    np.savetxt(fname, data, fmt=fmt, header=header)
 
     # ----------------------------------------------------
     # calculate redshift dependent interaction rates
@@ -68,12 +67,12 @@ for field in fields:
     for z in redshifts:
         r1 = interactionRate.calc_rate_eps(eps1, xs1, gamma, field, z)
         r2 = interactionRate.calc_rate_eps(eps2, xs2, gamma, field, z)
-        data.append( c_[[z]*len(lgamma), lgamma, r1, r2] )
+        data.append(np.c_[[z] * len(lgamma), lgamma, r1, r2])
 
-    data = concatenate( [d for d in data], axis=0 )
-    nan_to_num( data )
+    data = np.concatenate([d for d in data], axis=0)
+    np.nan_to_num(data)
     fname = folder + '/rate_%s.txt' % field.name.replace('IRB', 'IRBz')
-    fmt   = '%.2f\t%.2f\t%.6e\t%.6e'
+    fmt = '%.2f\t%.2f\t%.6e\t%.6e'
     header = ("Photo-pion interaction rate for the %s\n (redshift dependent)"
-              "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]"%field.info)
-    savetxt(fname, data, fmt=fmt, header=header)
+              "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
+    np.savetxt(fname, data, fmt=fmt, header=header)

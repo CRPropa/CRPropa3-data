@@ -4,9 +4,8 @@ References:
 (B70) Blumenthal 1970, Phys.Rev. D
 (C92) Chodorowski et al. 1992, ApJ 400:181-185
 """
-
-from numpy import *
-from scipy import interpolate, integrate
+import numpy as np
+from scipy import integrate
 import photonField
 
 
@@ -33,14 +32,14 @@ def lossRate(gamma, field, z=0):
         """
         Parametrization of the integral 3.12 (C92)
         """
-        _c = array([0.8048, 0.1459, 1.137e-3, -3.879e-6])
-        _d = array([-86.07, 50.96, -14.45, 8/3.])
-        _f = array([2.910, 78.35, 1837])
+        _c = np.array([0.8048, 0.1459, 1.137e-3, -3.879e-6])
+        _d = np.array([-86.07, 50.96, -14.45, 8 / 3.])
+        _f = np.array([2.910, 78.35, 1837])
         # phi(k) for k < 25, eq. 3.14
         if k < 25:
-            return pi/12 * (k-2)**4 / (1 + sum(_c * (k-2)**arange(1,5)))
+            return np.pi / 12 * (k - 2)**4 / (1 + sum(_c * (k - 2)**np.arange(1, 5)))
         # phi(k) for k > 25, eq. 3.18 and 3.16
-        return k * sum(_d * log(k)**arange(4)) / (1 - sum(_f * k**-arange(1,4)))
+        return k * sum(_d * np.log(k)**np.arange(4)) / (1 - sum(_f * k**-np.arange(1, 4)))
 
     def integrand(logk, gamma, field):
         """
@@ -49,25 +48,25 @@ def lossRate(gamma, field, z=0):
         gamma : nucleus Lorentz factor
         field : photon background
         """
-        k = exp(logk)
+        k = np.exp(logk)
         eps = k * me_c2 / 2 / gamma  # photon energy [J] in lab frame
         n = field.getDensity(eps, z)  # spectral number density [1/m^3/J]
         n *= me_c2  # from substitution d eps / d k
         return n * phi(k) / k  # includes *k from substitution k -> ln(k)
 
-    rate = zeros_like(gamma)
-    err  = zeros_like(gamma)
+    rate = np.zeros_like(gamma)
+    err = np.zeros_like(gamma)
 
     # minimum and maximum energy of the fields photons in units of me*c^2
     epsmin = field.getEmin() / me_c2
     epsmax = field.getEmax() / me_c2
 
     for i, g in enumerate(gamma):
-        lkmin = log(max(2, 2*g*epsmin))
-        lkmax = log(2*g*epsmax)
-        lksep = linspace(lkmin, lkmax, 11)[1:-1]
-        rate[i], err[i] = integrate.quad(integrand,
-            lkmin, lkmax, points=lksep, args=(g, field))
+        lkmin = np.log(max(2, 2 * g * epsmin))
+        lkmax = np.log(2 * g * epsmax)
+        lksep = np.linspace(lkmin, lkmax, 11)[1:-1]
+        rate[i], err[i] = integrate.quad(
+            integrand, lkmin, lkmax, points=lksep, args=(g, field))
 
     # prefactor of equation 3.11 (C92) and conversion [1/s] --> [1/Mpc]
     a = alpha * r0**2 * me / mp * Mpc
@@ -77,7 +76,7 @@ def lossRate(gamma, field, z=0):
 # -------------------------------------------------
 # Generate tables for energy loss rate
 # -------------------------------------------------
-gamma = logspace(6, 14, 161)  # tabulated Lorentz factors
+gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
 
 fields = [
     photonField.CMB(),
@@ -88,19 +87,18 @@ fields = [
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower'),
-    ]
+    photonField.EBL_Stecker16('lower')]
 
 for field in fields:
     print(field.name)
     rate = lossRate(gamma, field)[0]
     s = (rate > 1e-12)  # truncate if loss rate is < 10^-12 / Mpc
 
-    fname  = 'data/ElectronPairProduction/lossrate_%s.txt' % field.name
-    data   = c_[log10(gamma[s]), rate[s]]
-    fmt    = '%.2f\t%.6e'
+    fname = 'data/ElectronPairProduction/lossrate_%s.txt' % field.name
+    data = np.c_[np.log10(gamma[s]), rate[s]]
+    fmt = '%.2f\t%.6e'
     header = 'Loss rate for electron-pair production with the %s\nlog10(gamma)\t1/gamma dgamma/dx [1/Mpc]' % field.info
-    savetxt(fname, data, fmt=fmt, header=header)
+    np.savetxt(fname, data, fmt=fmt, header=header)
 
 
 # -------------------------------------------------
@@ -108,12 +106,12 @@ for field in fields:
 # This should be reimplemented for extension to the other backgrounds,
 # cross-checking and documentation.
 # -------------------------------------------------
-d1 = genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
-d2 = genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
+d1 = np.genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
+d2 = np.genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
 
 # amplitudes dN/dEe(Ep)
-A1 = d1[2].reshape((70, 170)) # CMB
-A2 = d2[2].reshape((70, 170)) # CMB + IRB (which?)
+A1 = d1[2].reshape((70, 170))  # CMB
+A2 = d2[2].reshape((70, 170))  # CMB + IRB (which?)
 A3 = A2 - A1  # IRB only
 
 # # normalize to 1
@@ -121,5 +119,5 @@ A3 = A2 - A1  # IRB only
 # A3 = (A3.T / sum(A3, axis=1)).T
 
 # save
-savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
-savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')
+np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
+np.savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')

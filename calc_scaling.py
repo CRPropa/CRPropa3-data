@@ -15,8 +15,7 @@ fields = [
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower'),
-    ]
+    photonField.EBL_Stecker16('lower')]
 
 for field in fields:
     print(field.name)
@@ -33,7 +32,7 @@ for field in fields:
     ts /= ts[0]
 
     np.savetxt(
-        'data/Scaling/scaling_%s.txt' % field.name, 
-        np.c_[tz, ts], 
+        'data/Scaling/scaling_%s.txt' % field.name,
+        np.c_[tz, ts],
         fmt='%.2f\t%.4e',
         header='redshift\t global evolution factor')
