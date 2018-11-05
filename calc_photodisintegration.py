@@ -87,10 +87,10 @@ for field in fields:
     B2 = np.array([interactionRate.calc_rate_eps(eps2, x, gamma, field) for x in xs2exc])
     for (Z, N, A) in isotopes1:
         s = (d1exc['Z'] == Z) * (d1exc['N'] == N)
-        B1[s] /= sum(B1[s], axis=0)
+        B1[s] /= np.sum(B1[s], axis=0)
     for (Z, N, A) in isotopes2:
         s = (d2exc['Z'] == Z) * (d2exc['N'] == N)
-        B2[s] /= sum(B2[s], axis=0)
+        B2[s] /= np.sum(B2[s], axis=0)
     B1 = np.nan_to_num(B1)  # set to 0 when total cross section is 0
     B2 = np.nan_to_num(B2)
 
