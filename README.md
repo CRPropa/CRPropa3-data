@@ -23,3 +23,7 @@ Other processes:
 Helper modules
  - photonField.py     : collection of background photon fields (CMB, EBL, URB)
  - interactionRate.py : functions to calculate interaction rates with isotropic photon fields
+
+Helper files
+ - generate_nativePhotonFieldFiles.py : generate photon field files with unified format for CRPropa's custom photon field extension 
+ - generate_photonFieldSharedFiles.py : centrally generate all shared files associated with a (custom) photon field file
