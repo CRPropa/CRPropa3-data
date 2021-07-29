@@ -144,7 +144,10 @@ fields = [
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('lower'),
     photonField.EBL_Stecker16('upper'),
-    photonField.URB_Protheroe96()]
+    photonField.URB_Protheroe96(),
+    photonField.URB_Fixsen11(),
+    photonField.URB_Nitu21()
+    ]
 
 for field in fields:
     print(field.name)
