@@ -62,7 +62,11 @@ fields = [
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower')]
+    photonField.EBL_Stecker16('lower'),
+    photonField.URB_Protheroe96(),
+    photonField.URB_Fixsen11(),
+    photonField.URB_Nitu21()
+    ]
 
 for field in fields:
     print(field.name)
@@ -106,7 +110,9 @@ for field in fields:
 # ----------------------------------------------------
 fields = [
     photonField.CMB(),
-    photonField.EBL_Gilmore12()]
+    photonField.EBL_Gilmore12(),
+    photonField.URB_Protheroe96()
+    ]
 
 for field in []:
     print(field.name)
