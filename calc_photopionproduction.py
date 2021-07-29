@@ -17,8 +17,11 @@ fields = [
     photonField.EBL_Dominguez11(),
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower')]
-
+    photonField.EBL_Stecker16('lower'),
+    photonField.URB_Protheroe96(),
+    photonField.URB_Fixsen11(),
+    photonField.URB_Nitu21()
+    ]
 
 # ----------------------------------------------------
 # Load proton / neutron cross sections [1/m^2] for tabulated energies [J]
