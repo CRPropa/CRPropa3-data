@@ -15,7 +15,9 @@ gamma = np.logspace(6, 14, 201)  # tabulated UHECR Lorentz-factors
 
 fields = [
     photonField.CMB(),
-    photonField.EBL_Gilmore12()]
+    photonField.EBL_Gilmore12(),
+    photonField.URB_Protheroe96()
+    ]
 
 
 # load cross section data from TALYS
