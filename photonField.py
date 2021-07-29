@@ -244,6 +244,7 @@ class URB_Protheroe96:
     """
     name = "URB_Protheroe96"
     info = "URB_Protheroe96"
+    redshift = None
 
     def getDensity(self, eps, z=0):
         """
