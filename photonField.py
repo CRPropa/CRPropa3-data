@@ -239,8 +239,12 @@ class EBL_Stecker16(EBL):
 # --------------------------------------------------------
 class URB_Protheroe96:
     """
-    Universal Radio Background from Protheroe, Bierman 1996.
+    Universal Radio Background from Protheroe & Bierman 1996.
     Taken from EleCa implementation.
+
+    Reference
+    R. J. Protheroe and P. L. Biermann
+    Astroparticle Physics 6 (1996) 45.
     """
     name = "URB_Protheroe96"
     info = "URB_Protheroe96"
