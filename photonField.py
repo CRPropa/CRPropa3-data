@@ -9,6 +9,7 @@ erg = 1e-7  # [J]
 c0 = 299792458  # [m/s]
 h = 6.62606957e-34  # [m^2 kg / s]
 kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
+Hz = 1. # [1 / s]
 T_CMB = 2.72548  # CMB temperature [K]
 
 
@@ -310,11 +311,11 @@ class URB_Fixsen11:
 
     def getEmin(self, z = 0.):
         """Minimum effective photon energy in [J]"""
-        return 2.2e6 * h
+        return 2.2e6 * Hz * h
 
     def getEmax(self, z = 0.):
         """Maximum effective photon energy in [J]"""
-        return 1e10 * h
+        return 1e10 * Hz * h
 
 class URB_Nitu21:
     """
@@ -349,7 +350,6 @@ class URB_Nitu21:
         nu = eps / h
         I = 0.
         for k in range(len(p)):
-            # I += (p[k] * np.log10(np.power(nu / 1e6, k)))
             I += (p[k] * np.power(np.log10(nu / 1e6), k))
         I = 10. ** I
         I = 4 * np.pi / (h * c0) * (I / eps)
@@ -361,11 +361,11 @@ class URB_Nitu21:
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
-        return 1e3 * h
+        return 1e3 * Hz * h
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 1e12 * h
+        return 1e12 * Hz * h
 
 # --------------------------------------------------------
 #
@@ -399,7 +399,6 @@ if __name__ == '__main__':
     legend(loc='lower center', fontsize='x-small')
     loglog()
     grid()
-    # ylim(1e1, 2e6)
     ylabel('$\epsilon^2 ~ dn/d\epsilon$ [eV/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('figures/EBL.png')
