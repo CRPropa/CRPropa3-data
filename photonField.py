@@ -9,6 +9,7 @@ erg = 1e-7  # [J]
 c0 = 299792458  # [m/s]
 h = 6.62606957e-34  # [m^2 kg / s]
 kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
+Hz = 1. # [1 / s]
 T_CMB = 2.72548  # CMB temperature [K]
 
 
@@ -239,11 +240,16 @@ class EBL_Stecker16(EBL):
 # --------------------------------------------------------
 class URB_Protheroe96:
     """
-    Universal Radio Background from Protheroe, Bierman 1996.
+    Universal Radio Background from Protheroe & Bierman 1996.
     Taken from EleCa implementation.
+
+    Reference
+    R. J. Protheroe and P. L. Biermann
+    Astroparticle Physics 6 (1996) 45.
     """
     name = "URB_Protheroe96"
     info = "URB_Protheroe96"
+    redshift = None
 
     def getDensity(self, eps, z=0):
         """
@@ -276,25 +282,94 @@ class URB_Protheroe96:
         """Maximum effective photon energy in [J]"""
         return 2E-6 * eV # 0.825e-6 * eV
 
+class URB_Fixsen11:
+    """
+    Universal Radio Background as measured by ARCADE2.
+    Note that the frequency range in this reference is more narrow than for other models.
+    Therefore, this should be used carefully.
 
-class CRB_ARCADE2:
-    def getDensity(self, eps):
+    Reference:
+      D. J. Fixsen et al.
+      The Astrophysical Journal 734 (2011) 5.
+      https://arxiv.org/abs/0901.0555
+    """
+    name = 'URB_Fixsen11'
+    info = 'URB_Fixsen11'
+    redshift = None
+
+    def getDensity(self, eps, z = 0.):
         """
         Spectral number density dn/deps [1/m^3/J] at z = 0.
         """
-        # T = 1.26 +- 0.09 K (nu/GHz)^-2.6 +- 0.04, see Holder 2012
-        T = 1.26 * (nu/1e9)**-2.6
-        return 8*np.pi / c0**3 / h**3 * eps**2 / (np.exp(eps/(kB*T)) - 1)
+        eps = np.r_[eps]
+        nu = eps / h
+        T = T_CMB + 24.1 * np.power(nu / 3.1e8, -2.6)
+        I = 8. * np.pi / c0 ** 3 / h ** 3 * eps ** 2 / (np.exp(eps / (kB * T)) - 1.)
+        I[eps < self.getEmin()] = 0.
+        I[eps > self.getEmax()] = 0.
+        return I
+
+    def getEmin(self, z = 0.):
+        """Minimum effective photon energy in [J]"""
+        return 2.2e6 * Hz * h
+
+    def getEmax(self, z = 0.):
+        """Maximum effective photon energy in [J]"""
+        return 1e10 * Hz * h
+
+class URB_Nitu21:
+    """
+    Universal Radio Background from Nitu et al. 2021.
+    Reference:
+      I. C. Nitu, H. T. J. Bevings, J. D. Bray, A. M. M. Scaife
+      Astroparticle Physics 126 (2021) 102532.
+      https://arxiv.org/abs/2004.13596
+    """
+    name = 'URB_Nitu21'
+    info = 'URB_Nitu21'
+    redshift = None
+
+    def getDensity(self, eps, z=0):
+        """
+        Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J]
+        """
+        p0 = -1.9847e1
+        p1 = -2.9857e-1
+        p2 = -2.6984e-1
+        p3 = 9.5394e-2
+        p4 = -4.9059e-2
+        p5 = 4.4297e-3
+        p6 = 7.6038e-3
+        p7 = -1.9690e-3
+        p8 = -2.2573e-4
+        p9 = 1.1762e-4
+        p10 = -9.9443e-6
+        p = [p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
+
+        eps = np.r_[eps]
+        nu = eps / h
+        I = 0.
+        for k in range(len(p)):
+            I += (p[k] * np.power(np.log10(nu / 1e6), k))
+        I = 10. ** I
+        I = 4 * np.pi / (h * c0) * (I / eps)
+
+        I[eps < self.getEmin()] = 0.
+        I[eps > self.getEmax()] = 0.
+
+        return I
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
-        return 1e-10 * eV
+        return 1e3 * Hz * h
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 0.1 * eV
+        return 1e12 * Hz * h
 
-
+# --------------------------------------------------------
+#
+# --------------------------------------------------------
 if __name__ == '__main__':
     from pylab import *
     eps = logspace(-3, 1, 200) * eV
@@ -324,7 +399,6 @@ if __name__ == '__main__':
     legend(loc='lower center', fontsize='x-small')
     loglog()
     grid()
-    # ylim(1e1, 2e6)
     ylabel('$\epsilon^2 ~ dn/d\epsilon$ [eV/m$^3$]')
     xlabel('$\epsilon$ [eV]')
     savefig('figures/EBL.png')
