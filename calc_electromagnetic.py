@@ -83,7 +83,7 @@ def process(sigma, field, name):
 
     # tabulated energies, limit to energies where the interaction is possible
     Emin = getEmin(sigma, field)
-    E = np.logspace(10, 23, 261) * eV
+    E = np.logspace(9, 23, 281) * eV
     E = E[E > Emin]
 
     # -------------------------------------------
@@ -98,7 +98,7 @@ def process(sigma, field, name):
     # save
     fname = folder + '/rate_%s.txt' % field.name
     data = np.c_[np.log10(E / eV), rate]
-    fmt = '%.2f\t%.6g'
+    fmt = '%.2f\t%.9g'
     header = '%s interaction rates\nphoton field: %s\nlog10(E/eV), 1/lambda [1/Mpc]' % (name, field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
@@ -129,7 +129,7 @@ def process(sigma, field, name):
     data = np.r_[row0, data]  # prepend log10(s_kin/eV^2) as first row
 
     fname = folder + '/cdf_%s.txt' % field.name
-    fmt = '%.2f' + '\t%.6g' * np.shape(rate_save)[1]
+    fmt = '%.2f' + '\t%.9g' * np.shape(rate_save)[1]
     header = '%s cumulative differential rate\nphoton field: %s\nlog10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row' % (name, field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 

@@ -83,7 +83,7 @@ for field in fields:
     np.savetxt(
         folder + '/rate_%s.txt' % field.name,
         np.r_[np.c_[d1sum['Z'], d1sum['N'], R1], np.c_[d2sum['Z'], d2sum['N'], R2]],
-        fmt='%i\t%i' + '\t%g' * 201,
+        fmt='%i\t%i' + '\t%.9g' * 201,
         header='Photodisintegration by the %s\nZ, N, 1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps' % field.info)
 
     # Calculate branching ratios from exclusive interaction rates
@@ -101,7 +101,7 @@ for field in fields:
     np.savetxt(
         folder + '/branching_%s.txt' % field.name,
         np.r_[np.c_[d1exc['Z'], d1exc['N'], d1exc['ch'], B1], np.c_[d2exc['Z'], d2exc['N'], d2exc['ch'], B2]],
-        fmt='%i\t%i\t%06d' + '\t%g' * 201,
+        fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
         header='Photo-disintegration with the %s\nZ, N, channel, branching ratio for log10(gamma) = 6-14 in 201 steps' % field.info)
 
 
@@ -127,5 +127,5 @@ for field in []:
     np.savetxt(
         'data/Photodisintegration/photon_emission_%s.txt' % field.name.split('_')[0],
         np.c_[d3exc['Z'], d3exc['N'], d3exc['Zd'], d3exc['Nd'], d3exc['Ephoton'] * 1e6, B3],
-        fmt='%i\t%i\t%i\t%i\t%g' + '\t%g' * 201,
+        fmt='%i\t%i\t%i\t%i\t%.9g' + '\t%.9g' * 201,
         header='Emission probabilities of photons with discrete energies via photo-disintegration with the %s\nZ, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps' % field.info)
