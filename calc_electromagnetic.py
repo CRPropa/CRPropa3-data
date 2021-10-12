@@ -66,7 +66,7 @@ def getSmin(sigma):
     return {sigmaPP: 4 * me2,
             sigmaDPP: 16 * me2,
             sigmaTPP: np.exp((218 / 27) / (28 / 9)) * me2 - me2,
-            sigmaICS: 1E-9 * me2
+            sigmaICS: 1e-40 * me2
             }[sigma]
 
 
@@ -91,14 +91,14 @@ def process(sigma, field, name):
     # -------------------------------------------
     # tabulated values of s_kin = s - mc^2
     # Note: integration method (Romberg) requires 2^n + 1 log-spaced tabulation points
-    s_kin = np.logspace(6, 23, 2049) * eV**2
+    s_kin = np.logspace(0, 23, 2 ** 18 + 1) * eV**2
     xs = getTabulatedXS(sigma, s_kin)
     rate = interactionRate.calc_rate_s(s_kin, xs, E, field)
 
     # save
     fname = folder + '/rate_%s.txt' % field.name
     data = np.c_[np.log10(E / eV), rate]
-    fmt = '%.2f\t%.9g'
+    fmt = '%.2f\t%5.4e'
     header = '%s interaction rates\nphoton field: %s\nlog10(E/eV), 1/lambda [1/Mpc]' % (name, field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
@@ -112,14 +112,14 @@ def process(sigma, field, name):
 
     # tabulated values of s_kin = s - mc^2, limit to relevant range
     # Note: use higher resolution and then downsample
-    skin = np.logspace(6.2, 23, 1680 + 1) * eV**2
+    skin = np.logspace(0, 23, 460000 + 1) * eV**2
     skin = skin[skin > skin_min]
 
     xs = getTabulatedXS(sigma, skin)
     rate = interactionRate.calc_rate_s(skin, xs, E, field, cdf=True)
 
     # downsample
-    skin_save = np.logspace(6.2, 23, 168 + 1) * eV**2
+    skin_save = np.logspace(0, 23, 230 + 1) * eV**2
     skin_save = skin_save[skin_save > skin_min]
     rate_save = np.array([np.interp(skin_save, skin, r) for r in rate])
 
@@ -132,6 +132,8 @@ def process(sigma, field, name):
     fmt = '%.2f' + '\t%.9g' * np.shape(rate_save)[1]
     header = '%s cumulative differential rate\nphoton field: %s\nlog10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row' % (name, field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
+
+    del data, rate, skin, skin_save, rate_save
 
 
 fields = [
