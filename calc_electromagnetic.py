@@ -7,18 +7,18 @@ import os
 
 eV = 1.60217657E-19  # [J]
 me2 = (510.998918E3 * eV)**2  # squared electron mass [J^2/c^4]
-sigmaThompson = 6.6524E-29  # Thompson cross section [m^2]
+sigmaThomson = 6.6524E-29  # Thomson cross section [m^2]
 alpha = 1 / 137.035999074  # fine structure constant
 
 
 def sigmaPP(s):
-    """ Pair production cross section (Bethe-Heitler), see Lee 1996 """
+    """ Pair production cross section (Breit-Wheeler), see Lee 1996 """
     smin = 4 * me2
     if (s < smin):
         return 0
     else:
         b = np.sqrt(1 - smin / s)
-        return sigmaThompson * 3 / 16 * (1 - b**2) * ((3 - b**4) * np.log((1 + b) / (1 - b)) - 2 * b * (2 - b**2))
+        return sigmaThomson * 3 / 16 * (1 - b**2) * ((3 - b**4) * np.log((1 + b) / (1 - b)) - 2 * b * (2 - b**2))
 
 
 def sigmaDPP(s):
@@ -40,7 +40,7 @@ def sigmaICS(s):
         b = (s - smin) / (s + smin)
         A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
         B = (2 - 3 * b**2 - b**3) / b**2 * np.log((1 + b) / (1 - b))
-        return sigmaThompson * 3 / 8 * smin / s / b * (A - B)
+        return sigmaThomson * 3 / 8 * smin / s / b * (A - B)
 
 
 def sigmaTPP(s):
@@ -49,7 +49,7 @@ def sigmaTPP(s):
     if beta < 0:
         return 0
     else:
-        return sigmaThompson * 3 / 8 / np.pi * alpha * beta
+        return sigmaThomson * 3 / 8 / np.pi * alpha * beta
 
 
 def getTabulatedXS(sigma, skin):
