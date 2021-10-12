@@ -15,10 +15,10 @@ def sigmaPP(s):
     """ Pair production cross section (Breit-Wheeler), see Lee 1996 """
     smin = 4 * me2
     if (s < smin):
-        return 0
-    else:
-        b = np.sqrt(1 - smin / s)
-        return sigmaThomson * 3 / 16 * (1 - b**2) * ((3 - b**4) * np.log((1 + b) / (1 - b)) - 2 * b * (2 - b**2))
+        return 0.
+
+    b = np.sqrt(1 - smin / s)
+    return sigmaThomson * 3 / 16 * (1 - b**2) * ((3 - b**4) * (np.log1p(b) - np.log1p(-b)) - 2 * b * (2 - b**2))
 
 
 def sigmaDPP(s):
@@ -26,8 +26,8 @@ def sigmaDPP(s):
     smin = 16 * me2
     if (s < smin):
         return 0
-    else:
-        return 6.45E-34 * (1 - smin / s)**6
+
+    return 6.45E-34 * (1 - smin / s)**6
 
 
 def sigmaICS(s):
@@ -35,12 +35,12 @@ def sigmaICS(s):
     smin = me2
     if (s < smin):  # numerically unstable close to smin
         return 0
-    else:
-        # note: formula unstable for (s - smin) / smin < 1E-5
-        b = (s - smin) / (s + smin)
-        A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
-        B = (2 - 3 * b**2 - b**3) / b**2 * np.log((1 + b) / (1 - b))
-        return sigmaThomson * 3 / 8 * smin / s / b * (A - B)
+
+    # note: formula unstable for (s - smin) / smin < 1E-5
+    b = (s - smin) / (s + smin)
+    A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
+    B = (2 - 3 * b**2 - b**3) / b**2 * (np.log1p(b) - np.log1p(-b))
+    return sigmaThomson * 3 / 8 * smin / s / b * (A - B)
 
 
 def sigmaTPP(s):
@@ -48,8 +48,8 @@ def sigmaTPP(s):
     beta = 28 / 9 * np.log(s / me2) - 218 / 27
     if beta < 0:
         return 0
-    else:
-        return sigmaThomson * 3 / 8 / np.pi * alpha * beta
+    
+    return sigmaThomson * 3 / 8 / np.pi * alpha * beta
 
 
 def getTabulatedXS(sigma, skin):
