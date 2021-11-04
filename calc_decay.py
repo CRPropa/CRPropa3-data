@@ -68,8 +68,8 @@ class GammaEmission:
 
 
 ### parse gamma emission data file
-print '\nParsing gamma emission data file'
-print '-------------------------------------'
+print ('\nParsing gamma emission data file')
+print ('-------------------------------------')
 data = open('tables/gamma_NuDat2.txt')
 lines = data.readlines()[1:-3] # skip header and footer
 data.close()
@@ -103,22 +103,22 @@ for Z in range(27):
 
 
 ### explicitly edit some entries
-print '\nExplicitly editing certain entries'
-print '-------------------------------------'
+print ('\nExplicitly editing certain entries')
+print ('-------------------------------------')
 
 # for beta-n decay of Na-27 photon emission probability is 100% if decay happens
 g0 = gammaTable[11][16]['B-N']
 g0.intensity[0] = 100.
-print g0, ' <- set photon emission probability to 100%\n'
+print (g0, ' <- set photon emission probability to 100%\n')
 
 # renormalize emission probability for beta+ decay of K-40 (BR = 10.86%, intensity = 10.66% -> emission prob if decay happens = 98.16%)
 g0 = gammaTable[19][21]['EC']
 g0.intensity[0] = 98.16
-print g0, ' <- renormalize photon emission probability to 98.16%\n'
+print (g0, ' <- renormalize photon emission probability to 98.16%\n')
 
 # remove one of two tabulated beta- decays for K-46
 g0 = gammaTable[19][27]['B-']
-print g0,'\n'
+print (g0,'\n')
 takeIndex = [2,3,4,7,9,11]
 energy = []
 intensity = []
@@ -127,20 +127,20 @@ for i in takeIndex:
     intensity.append(g0.intensity[i])
 g0.intensity = intensity
 g0.energy = energy
-print g0, ' <- removed additional beta- decay with same properties\n'
+print (g0, ' <- removed additional beta- decay with same properties\n')
 
 # for beta- and beta+ decay of V-50 emission probability of photon is 100% if decay happens
 g0 = gammaTable[23][27]['B-']
 g1 = gammaTable[23][27]['EC']
 g0.intensity[0] = 100.
 g1.intensity[0] = 100.
-print g0, ' <- set photon emission probability to 100%\n'
-print g1, ' <- set photon emission probability to 100%\n'
+print (g0, ' <- set photon emission probability to 100%\n')
+print (g1, ' <- set photon emission probability to 100%\n')
 
 
 ### parse decay data file
-print '\nParsing decay data file'
-print '-------------------------------------'
+print ('\nParsing decay data file')
+print ('-------------------------------------')
 fin = open('tables/decay_NuDat2.txt')
 lines = fin.readlines()
 fin.close()
@@ -153,21 +153,21 @@ for line in lines[1:-3]:
     if (d.Z > 26) or (d.N > 30):
         continue
     if d.mode == 'IT':
-        print d, '<- skip (isomeric transition)'
+        print (d, '<- skip (isomeric transition)')
         continue
     if d.tau == 0:
-        print d, '<- skip (missing lifetime)'
+        print (d, '<- skip (missing lifetime)')
         continue
     if d.mode == '':
         if not(d.isStable()):
-            print d, '<- skip (missing decay mode)'
+            print (d, '<- skip (missing decay mode)')
             continue
     decayTable[d.Z][d.N].append(d)
 
 
 ### remove duplicate decays
-print '\n\nRemoving duplicates'
-print '-------------------------------------'
+print ('\n\nRemoving duplicates')
+print ('-------------------------------------')
 for z in range(27):
     for n in range(31):
         dList = decayTable[z][n]
@@ -178,49 +178,49 @@ for z in range(27):
         for i, d1 in enumerate(dList):
             for d2 in dList[i+1:]:
                 if d1.mode == d2.mode:
-                    print d1
-                    print d2, ' <- remove \n'
+                    print (d1)
+                    print (d2, ' <- remove \n')
                     dList.remove(d2)
 
 
 ### explicitly edit some entries
-print '\nExplicitly editing certain entries'
-print '-------------------------------------'
+print ('\nExplicitly editing certain entries')
+print ('-------------------------------------')
 
 # remove Li-5 alpha decay (equivalent to existing proton emission)
 d0 = decayTable[3][2][0]
 d1 = decayTable[3][2][1]
-print d0
-print d1, ' <- remove (equivalent to neutron emission)\n'
+print (d0)
+print (d1, ' <- remove (equivalent to neutron emission)\n')
 decayTable[3][2].remove(d1)
 
 # remove He-5 alpha decay (equivalent to existing neutron emission)
 d0 = decayTable[2][3][0]
 d1 = decayTable[2][3][1]
-print d1
-print d0, ' <- remove (equivalent to neutron emission)\n'
+print (d1)
+print (d0, ' <- remove (equivalent to neutron emission)\n')
 decayTable[2][3].remove(d0)
 
 # modify B-12 "B3A" decay to "B2A" as it would leave an empty nucleus
 d = decayTable[5][7][1]
-print d, ' <- change decay mode to B2A\n'
+print (d, ' <- change decay mode to B2A\n')
 d.mode = 'B2A'
 
 # Fe-45: to make beta+ decays exclusive
 d = decayTable[26][19][0]
-print d, ' <- set branching ratio to 0 (ratio equal to sum of following ratios)'
+print (d, ' <- set branching ratio to 0 (ratio equal to sum of following ratios)')
 d.br = 0
 brSum = 0
 for d in decayTable[26][19][1:]:
-    print d
+    print (d)
     brSum += d.br
 for d in decayTable[26][19][1:]:
     d.br /= brSum
 
 
 ### calculate exclusive mean life times
-print '\n\nCalculating exclusive life times'
-print '-------------------------------------'
+print ('\n\nCalculating exclusive life times')
+print ('-------------------------------------')
 for z in range(27):
     for n in range(31):
         dList = decayTable[z][n]
@@ -262,7 +262,7 @@ for z in range(27):
         # finally, calculate exclusive decay time by dividing with branching ratio, while removing zeros
         for d in dList:
             if d.br == 0:
-                print d, ' <- remove (branching ratio 0)'
+                print (d, ' <- remove (branching ratio 0)')
                 dList.remove(d)
             else:
                 d.tau /= d.br
@@ -270,8 +270,8 @@ for z in range(27):
 
 ### correct for electron capture contribution in beta+ decays
 # see Basdevant, Fundamentals in Nuclear Physics, 4.3.2 and 4.3.3
-print '\nBeta+ correction'
-print '-------------------------------------'
+print ('\nBeta+ correction')
+print ('-------------------------------------')
 Qe = crp.mass_electron * crp.c_squared  # electron energy [J]
 a0 = 5.29177e-11  # Bohr radius [m]
 hbar_c = crp.c_light * (crp.h_planck / 2 / pi)  # [m/J]
@@ -292,7 +292,7 @@ for Z in range(27):
 
             # check if energetically possible
             if Qbeta < 0:
-                print d, ' <- make stable (beta+ decay not possible)'
+                print (d, ' <- make stable (beta+ decay not possible)')
                 d.tau = inf
                 continue
 
@@ -302,9 +302,9 @@ for Z in range(27):
             # ratio tau_beta+ / tau_ec
             f = pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
             if f < 0:
-                print Qec
-                print I1(Q/Qe)
-            print d, ' <- beta+ correction %.1e'%f
+                print (Qec)
+                print (I1(Q/Qe))
+            print (d, ' <- beta+ correction %.1e'%f)
             d.tau *= 1 + f
 
             # remove gamma decays which are not possible in beta+ decays
@@ -315,7 +315,7 @@ for Z in range(27):
             for i, Egamma in enumerate(g.energy):
                 Egamma *= crp.keV
                 if Egamma > Qbeta:
-                    print d, ' <- remove gamma decay (Egamma %g < %g = Q)' % (Egamma, Qbeta)
+                    print (d, ' <- remove gamma decay (Egamma %g < %g = Q)' % (Egamma, Qbeta))
                     g.energy.pop(i)
                     g.intensity.pop(i)
             if len(g.energy) == 0:
@@ -325,7 +325,7 @@ for Z in range(27):
 
 
 ### set immediate proton / neutron dripping for all other isotopes
-print '\n\nSet proton / neutron dripping for all other isotopes'
+print ('\n\nSet proton / neutron dripping for all other isotopes')
 for z in range(0,27):
     for n in range(0,31):
         if (z + n)==0:

@@ -28,8 +28,7 @@ for line in fin.readlines():
 
     if line.startswith('Relative Atomic Mass'):
         line = line.strip('Relative Atomic Mass = ')
-        relAtomicMass = line.translate(None, '()#\n')
-
+        relAtomicMass = line[:line.find('(')]
         n = a - z
         if a == 1:
             continue # skip H-1
