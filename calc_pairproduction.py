@@ -4,6 +4,7 @@ References:
 (B70) Blumenthal 1970, Phys.Rev. D
 (C92) Chodorowski et al. 1992, ApJ 400:181-185
 """
+import os
 import numpy as np
 from scipy import integrate
 import photonField
@@ -88,6 +89,11 @@ fields = [
     photonField.EBL_Gilmore12(),
     photonField.EBL_Stecker16('upper'),
     photonField.EBL_Stecker16('lower')]
+    
+# output folder
+folder = 'data/ElectronPairProduction'
+if not os.path.exists(folder):
+    os.makedirs(folder)
 
 for field in fields:
     print(field.name)

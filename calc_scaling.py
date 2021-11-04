@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from scipy.integrate import trapz
 import photonField
@@ -30,7 +31,12 @@ for field in fields:
         ts[i] = trapz(n, eps)
 
     ts /= ts[0]
-
+    
+    # output folder
+    folder = 'data/Scaling'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    
     np.savetxt(
         'data/Scaling/scaling_%s.txt' % field.name,
         np.c_[tz, ts],
