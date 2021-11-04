@@ -1,6 +1,7 @@
 from numpy import *
 import crpropa as crp
 from scipy.integrate import quad
+import gitHelp as gh
 
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
@@ -351,6 +352,12 @@ for z in range(0,27):
 
 ### save decay table
 fout = open('data/nuclear_decay.txt','w')
+# Add git hash of crpropa-data repository to header
+try:
+    git_hash = gh.get_git_revision_hash()
+    fout.write('# Produced with crpropa-data version: '+git_hash+'\n')
+except:
+    pass 
 fout.write('# Z, N, Decay Mode (#beta- #beta+ #alpha #p #n), Mean Life Time [s], Gamma Energy 1 [keV], Gamma Emission Probability 1, Gamma Energy 2 [keV], Gamma Emission Probability 2, ...\n')
 
 # decay mode codes: #beta- #beta+ #alpha #p #n
@@ -408,6 +415,12 @@ fout.close()
 ### save isotopes with tau > 2 s to consider for photo-disintegration
 # this is not needed for CRPropa
 fout = open('data/isotopes-2s.txt', 'w')
+# Add git hash of crpropa-data repository to header
+try:
+    git_hash = gh.get_git_revision_hash()
+    fout.write('# Produced with crpropa-data version: '+git_hash+'\n')
+except:
+    pass 
 fout.write('# Z\tN\tA\n')
 fout.write('# isotopes with lifetime > 2s (including beta+ correction, see calc_decay.py)\n')
 for z in range(1,27):
@@ -425,6 +438,12 @@ fout.close()
 ### save stable isotopes
 # this is not needed for CRPropa
 fout = open('data/isotopes-stable.txt', 'w')
+# Add git hash of crpropa-data repository to header
+try:
+    git_hash = gh.get_git_revision_hash()
+    fout.write('# Produced with crpropa-data version: '+git_hash+'\n')
+except:
+    pass 
 fout.write('# Z\tN\tA\n')
 fout.write('# stable isotopes (including beta+ correction, see calc_decay.py)\n')
 for z in range(1,27):

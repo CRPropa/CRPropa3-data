@@ -2,7 +2,7 @@ import os
 import numpy as np
 from scipy.special import kv
 from scipy import integrate
-
+import gitHelp as gh
 
 
 def synchrotron_spectrum(xval):
@@ -44,7 +44,12 @@ def compute_spectrum(x, outputName):
     cdf = synchrotron_spectrum(x)
     lx = np.log10(x)
     data = np.c_[lx, cdf]
-    header = 'x\t: photon frequency to critical frequency fraction\nlog10(x)\tCDF\n'
+    # Add git hash of crpropa-data repository to header
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = 'Produced with crpropa-data version: '+git_hash+'\nx\t: photon frequency to critical frequency fraction\nlog10(x)\tCDF\n'
+    except: 
+        header = 'x\t: photon frequency to critical frequency fraction\nlog10(x)\tCDF\n'
     fmt = '%3.2f\t%7.6e'
     np.savetxt(outputName, data, fmt = fmt, header = header)
 
@@ -73,7 +78,6 @@ def plot(specFile, plotFile):
     plt.xlabel('$x \\equiv \\nu / \\nu_c$')
     plt.ylabel('$f(x)$')
     plt.savefig(plotFile)
-    plt.show()
 
 
 # ----------------------------------------------------------------

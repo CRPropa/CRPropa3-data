@@ -8,6 +8,7 @@ import os
 import numpy as np
 from scipy import integrate
 import photonField
+import gitHelp as gh
 
 
 eV = 1.60217657e-19  # [J]
@@ -103,7 +104,14 @@ for field in fields:
     fname = 'data/ElectronPairProduction/lossrate_%s.txt' % field.name
     data = np.c_[np.log10(gamma[s]), rate[s]]
     fmt = '%.2f\t%.6e'
-    header = 'Loss rate for electron-pair production with the %s\nlog10(gamma)\t1/gamma dgamma/dx [1/Mpc]' % field.info
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Loss rate for electron-pair production with the %s\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"log10(gamma)\t1/gamma dgamma/dx [1/Mpc]" )
+    except:
+        header = ("Loss rate for electron-pair production with the %s\n"
+                  "log10(gamma)\t1/gamma dgamma/dx [1/Mpc]" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
 

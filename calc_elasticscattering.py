@@ -2,7 +2,7 @@ import numpy as np
 import os
 import photonField
 import interactionRate as iR
-
+import gitHelp as gh
 
 eV = 1.60217657e-19
 
@@ -43,7 +43,14 @@ for field in fields:
     # calculate the interaction rate, averaged over all isotopes
     rate = np.mean([iR.calc_rate_eps(eps, x, gamma, field) for x in xs], axis=0)
     fname = folder + '/rate_%s.txt' % field.name.split('_')[0]
-    header = 'Average interaction rate for elastic scattering of %s photons off nuclei\nScale with Z*N/A for nuclei\n1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps' % field.info
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Average interaction rate for elastic scattering of %s photons off nuclei\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"Scale with Z*N/A for nuclei\n1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps" )
+    except:
+        header = ("Average interaction rate for elastic scattering of %s photons off nuclei\n"
+                  "Scale with Z*N/A for nuclei\n1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps" % field.info)
     np.savetxt(fname, rate, fmt='%g', header=header)
 
     # calculate CDF for background photon energies, averaged over all isotopes
@@ -57,5 +64,12 @@ for field in fields:
     fname = folder + '/cdf_%s.txt' % field.name.split('_')[0]
     data = np.c_[np.log10(gamma), CDF]
     fmt = '%g' + '\t%g' * len(eps)
-    header = '# Average CDF(background photon energy) for elastic scattering with the %s\n# log10(gamma), (1/lambda)_cumulative for eps = log10(2 keV) - log10(263 MeV) in 513 steps' % field.info
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Average CDF(background photon energy) for elastic scattering with the %s\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"log10(gamma), (1/lambda)_cumulative for eps = log10(2 keV) - log10(263 MeV) in 513 steps" )
+    except:
+        header = ("Average CDF(background photon energy) for elastic scattering with the %s\n"
+                  "log10(gamma), (1/lambda)_cumulative for eps = log10(2 keV) - log10(263 MeV) in 513 steps" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)

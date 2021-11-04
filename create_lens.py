@@ -13,6 +13,7 @@ import logging
 
 import multiprocessing
 import argparse
+import gitHelp as gh
 
 log = logging.getLogger("create_lens")
 ch = logging.StreamHandler()
@@ -102,6 +103,10 @@ log.debug("Total time to read data: {}s, {}s per file".format(duration, duration
 cfg = open(os.path.join(args.lensname, 'lens.cfg'), 'w')
 cfg.write('# Magnetic lens {} for usage with CRPRopa3\n'.format(args.lensname))
 cfg.write('# Created on {} with {} backtracked particles\n'.format(time.ctime(), tot_cr))
+try:
+    cfg.write('# Produced with crpropa-data version: {}\n'.format(gh.get_git_revision_hash())
+except:
+    pass
 cfg.write('#\n')
 cfg.write('# fname log(Rmin / eV) log(Rmax / eV)\n')
 cfg.write('#\n')

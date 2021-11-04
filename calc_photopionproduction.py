@@ -2,7 +2,7 @@ import numpy as np
 import interactionRate
 import photonField
 import os
-
+import gitHelp as gh
 
 eV = 1.60217657e-19
 lgamma = np.linspace(6, 16, 251)  # tabulated Lorentz factors
@@ -53,8 +53,14 @@ for field in fields:
     fname = folder + '/rate_%s.txt' % field.name
     data = np.c_[lgamma, r1, r2]
     fmt = '%.2f\t%.6e\t%.6e'
-    header = ("Photo-pion interaction rate with the %s\nlog10(gamma)"
-              "\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Photo-pion interaction rate with the %s\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"log10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" )
+    except:
+        header = ("Photo-pion interaction rate with the %s\nlog10(gamma)"
+                  "\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
     # ----------------------------------------------------
@@ -76,6 +82,12 @@ for field in fields:
     np.nan_to_num(data)
     fname = folder + '/rate_%s.txt' % field.name.replace('IRB', 'IRBz')
     fmt = '%.2f\t%.2f\t%.6e\t%.6e'
-    header = ("Photo-pion interaction rate for the %s\n (redshift dependent)"
-              "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Photo-pion interaction rate with the %s (redshift dependent) \n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  + "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]")
+    except:
+        header = ("Photo-pion interaction rate for the %s\n (redshift dependent)"
+                  "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
