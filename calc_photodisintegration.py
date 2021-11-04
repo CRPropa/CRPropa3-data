@@ -131,7 +131,7 @@ fields = [
     photonField.URB_Protheroe96()
     ]
 
-for field in []:
+for field in fields:
     print(field.name)
 
     R3 = np.array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3sum])
@@ -150,7 +150,8 @@ for field in []:
         header = ("Emission probabilities of photons with discrete energies via photo-disintegration with the%s\n"
                   "Z, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps" % field.info)
     np.savetxt(
-        'data/Photodisintegration/photon_emission_%s.txt' % field.name.split('_')[0],
+        #'data/Photodisintegration/photon_emission_%s.txt' % field.name.split('_')[0],
+        'data/Photodisintegration/photon_emission_%s.txt' % field.name,
         np.c_[d3exc['Z'], d3exc['N'], d3exc['Zd'], d3exc['Nd'], d3exc['Ephoton'] * 1e6, B3],
         fmt='%i\t%i\t%i\t%i\t%.9g' + '\t%.9g' * 201,
         header=header)
