@@ -15,6 +15,8 @@
 import numpy as np
 import pandas as pd 
 import os
+import gitHelp as gh
+
 
 eV = 1.60217657e-19  # [J]
 cm3 = 1e-6  # [m^3]
@@ -203,14 +205,26 @@ def CMB(outDir):
 
 
 def createField(name, info, energy, redshift, photonDensity, outDir):
+    try:
+        git_hash = gh.get_git_revision_hash()
+        addHash = True
+    except:
+        addHash = False
+
     with open(outDir + "/" + name + "_photonEnergy.txt", 'w') as f:
         for e in energy:
+            if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+            f.write("# photon energies in [J]\n")
             f.write("{}\n".format(e * eV))  # [J]
     if redshift is not None:
         with open(outDir + "/" + name + "_redshift.txt", 'w') as f:
+            if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+            f.write("# redshift")
             for z in redshift:
                 f.write("{}\n".format(np.round(z, 2)))
     with open(outDir + "/" + name + "_photonDensity.txt", 'w') as f:
+        if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+        f.write("# Comoving photon number density in [m^-3], format: d(e1,z1), ... , d(e1,zm), d(e2,z1), ... , d(e2,zm), ... , d(en,zm)")
         for i, densSlice in enumerate(photonDensity):
             for d in densSlice:
                 f.write("{}\n".format(d * energy[i] / cm3))  # [# / m^3], comoving
