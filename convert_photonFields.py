@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd 
 import os
 import gitHelp as gh
+import photonField as pf
 
 
 eV = 1.60217657e-19  # [J]
@@ -194,13 +195,52 @@ def IRB_Franceschini08(fileDir, outDir):
 
 def CMB(outDir):
     name = "CMB"
-    info = "Cosmic Microwave Background, T_CMB = 2.73 K"
+    info = "# Cosmic Microwave Background, T_CMB = 2.73 K"
     redshift = None
     eps = np.logspace(-10, -1, 101) * eV
     T_CMB = 2.73
     dnde = lambda e: 8 * np.pi / c0**3 / h**3 * e**2 / (np.exp(e/(kB*T_CMB)) - 1)
     photonField = [[d * eV * cm3] for d in dnde(eps)]  # [1/eVcm^3]
     energy = eps / eV  # [eV]
+    createField(name, info, energy, redshift, photonField, outDir)
+
+
+def URB_Protheroe96(outDir):
+    name = "URB_Protheroe96"
+    info = "# Universal Radio Background from Protheroe & Bierman Astroparticle Physics 6 (1996) 45."
+    redshift = None
+    PB = pf.URB_Protheroe96()
+    logEmin = np.log10(PB.getEmin())
+    logEmax = np.log10(PB.getEmax())
+    eps = np.logspace(logEmin, logEmax, 101)
+    photonField = np.array([PB.getDensity(e) for e in eps]) / (cm3**-1  * eV**-1)
+    energy = eps / eV
+    createField(name, info, energy, redshift, photonField, outDir)
+
+
+def URB_Fixsen11(outDir):
+    name = "URB_Fixsen11"
+    info = "# Universal Radio Background as measured by ARCADE2 D. J. Fixsen et al. ApJ 734 (2011) 5"
+    redshift = None
+    FX = pf.URB_Fixsen11()
+    logEmin = np.log10(FX.getEmin())
+    logEmax = np.log10(FX.getEmax())
+    eps = np.logspace(logEmin, logEmax, 101)
+    photonField = np.array([FX.getDensity(e) for e in eps]) / (cm3**-1 * eV**-1)
+    energy = eps / eV
+    createField(name, info, energy, redshift, photonField, outDir)
+
+
+def URB_Nitu21(outDir):
+    name = "URB_Nitu21"
+    info = "# Universal Radio Background from Nitu et al. Astropart. Phys. 126 (2021) 102532"
+    redshift = None
+    NT = pf.URB_Nitu21()
+    logEmin = np.log10(NT.getEmin())
+    logEmax = np.log10(NT.getEmax())
+    eps = np.logspace(logEmin, logEmax, 101)
+    photonField = np.array([NT.getDensity(e) for e in eps]) / (cm3**-1  * eV**-1)
+    energy = eps / eV
     createField(name, info, energy, redshift, photonField, outDir)
 
 
@@ -212,19 +252,22 @@ def createField(name, info, energy, redshift, photonDensity, outDir):
         addHash = False
 
     with open(outDir + "/" + name + "_photonEnergy.txt", 'w') as f:
+        f.write(info+'\n')
+        if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+        f.write("# photon energies in [J]\n")
         for e in energy:
-            if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
-            f.write("# photon energies in [J]\n")
             f.write("{}\n".format(e * eV))  # [J]
     if redshift is not None:
         with open(outDir + "/" + name + "_redshift.txt", 'w') as f:
+            f.write(info+'\n')
             if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
-            f.write("# redshift")
+            f.write("# redshift\n")
             for z in redshift:
                 f.write("{}\n".format(np.round(z, 2)))
     with open(outDir + "/" + name + "_photonDensity.txt", 'w') as f:
+        f.write(info+'\n')
         if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
-        f.write("# Comoving photon number density in [m^-3], format: d(e1,z1), ... , d(e1,zm), d(e2,z1), ... , d(e2,zm), ... , d(en,zm)")
+        f.write("# Comoving photon number density in [m^-3], format: d(e1,z1), ... , d(e1,zm), d(e2,z1), ... , d(e2,zm), ... , d(en,zm)\n")
         for i, densSlice in enumerate(photonDensity):
             for d in densSlice:
                 f.write("{}\n".format(d * energy[i] / cm3))  # [# / m^3], comoving
@@ -247,3 +290,6 @@ if __name__ == "__main__":
     IRB_Stecker16_lower(inFileDir, outDir)
     IRB_Stecker16_upper(inFileDir, outDir)
     CMB(outDir)
+    URB_Protheroe96(outDir)
+    URB_Fixsen11(outDir)
+    URB_Nitu21(outDir)
