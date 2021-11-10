@@ -8,6 +8,9 @@ import gitHelp as gh
 # The ratio s(z) = I(z)/I(0) serves as a global scaling factor for all interactions with the EBL.
 # In contrast to CRPropa 2, the photon spectrum is integrated over the whole tabulated range.
 
+# Note: Redshift Scaling is now natively supported in CRPropa's PhotonBackground class. Therefore, 
+# the scaling files are not included in the download data and this script is only kept for comparison.
+
 fields = [
     photonField.EBL_Kneiske04(),
     photonField.EBL_Stecker05(),
@@ -43,7 +46,7 @@ for field in fields:
     except:
         header = 'redshift\t global evolution factor'
     np.savetxt(
-        'data/Scaling/scaling_%s.txt' % field.name,
+        'data/Scaling/%s_scaling.txt' % field.name,
         np.c_[tz, ts],
         fmt='%.2f\t%.4e',
         header=header)
