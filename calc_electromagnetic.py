@@ -5,9 +5,9 @@ import photonField
 import os
 
 
-eV = 1.60217657E-19  # [J]
-me2 = (510.998918E3 * eV)**2  # squared electron mass [J^2/c^4]
-sigmaThomson = 6.6524E-29  # Thomson cross section [m^2]
+eV = 1.60217657e-19  # [J]
+me2 = (510.998918e3 * eV) ** 2  # squared electron mass [J^2/c^4]
+sigmaThomson = 6.6524e-29  # Thomson cross section [m^2]
 alpha = 1 / 137.035999074  # fine structure constant
 
 
@@ -91,14 +91,14 @@ def process(sigma, field, name):
     # -------------------------------------------
     # tabulated values of s_kin = s - mc^2
     # Note: integration method (Romberg) requires 2^n + 1 log-spaced tabulation points
-    s_kin = np.logspace(0, 23, 2 ** 18 + 1) * eV**2
+    s_kin = np.logspace(4, 23, 2 ** 18 + 1) * eV**2
     xs = getTabulatedXS(sigma, s_kin)
     rate = interactionRate.calc_rate_s(s_kin, xs, E, field)
 
     # save
     fname = folder + '/rate_%s.txt' % field.name
     data = np.c_[np.log10(E / eV), rate]
-    fmt = '%.2f\t%5.4e'
+    fmt = '%.2f\t%8.7e'
     header = '%s interaction rates\nphoton field: %s\nlog10(E/eV), 1/lambda [1/Mpc]' % (name, field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
@@ -112,14 +112,14 @@ def process(sigma, field, name):
 
     # tabulated values of s_kin = s - mc^2, limit to relevant range
     # Note: use higher resolution and then downsample
-    skin = np.logspace(0, 23, 460000 + 1) * eV**2
+    skin = np.logspace(4, 23, 380000 + 1) * eV**2
     skin = skin[skin > skin_min]
 
     xs = getTabulatedXS(sigma, skin)
     rate = interactionRate.calc_rate_s(skin, xs, E, field, cdf=True)
 
     # downsample
-    skin_save = np.logspace(0, 23, 230 + 1) * eV**2
+    skin_save = np.logspace(4, 23, 190 + 1) * eV**2
     skin_save = skin_save[skin_save > skin_min]
     rate_save = np.array([np.interp(skin_save, skin, r) for r in rate])
 
@@ -129,7 +129,7 @@ def process(sigma, field, name):
     data = np.r_[row0, data]  # prepend log10(s_kin/eV^2) as first row
 
     fname = folder + '/cdf_%s.txt' % field.name
-    fmt = '%.2f' + '\t%.9g' * np.shape(rate_save)[1]
+    fmt = '%.2f' + '\t%6.5e' * np.shape(rate_save)[1]
     header = '%s cumulative differential rate\nphoton field: %s\nlog10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row' % (name, field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
@@ -150,6 +150,8 @@ fields = [
     photonField.URB_Fixsen11(),
     photonField.URB_Nitu21()
     ]
+
+fields = [photonField.CMB()]
 
 for field in fields:
     print(field.name)
