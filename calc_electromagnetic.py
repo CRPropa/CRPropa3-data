@@ -151,8 +151,6 @@ fields = [
     photonField.URB_Nitu21()
     ]
 
-fields = [photonField.CMB()]
-
 for field in fields:
     print(field.name)
     process(sigmaPP, field, 'EMPairProduction')
