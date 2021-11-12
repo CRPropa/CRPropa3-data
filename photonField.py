@@ -28,7 +28,7 @@ class CMB:
         Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J] and redshift z.
         Multiply with (1+z)^3 for the physical number density.
         """
-        return 8*np.pi / c0**3 / h**3 * eps**2 / (np.exp(eps/(kB*T_CMB)) - 1)
+        return 8*np.pi / c0**3 / h**3 * eps**2 / np.expm1(eps / (kB * T_CMB)) 
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
@@ -304,7 +304,7 @@ class URB_Fixsen11:
         eps = np.r_[eps]
         nu = eps / h
         T = T_CMB + 24.1 * np.power(nu / 3.1e8, -2.6)
-        I = 8. * np.pi / c0 ** 3 / h ** 3 * eps ** 2 / (np.exp(eps / (kB * T)) - 1.)
+        I = 8. * np.pi / c0 ** 3 / h ** 3 * eps ** 2 / (np.expm1(eps / (kB * T)))
         I[eps < self.getEmin()] = 0.
         I[eps > self.getEmax()] = 0.
         return I
