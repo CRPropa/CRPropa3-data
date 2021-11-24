@@ -6,20 +6,20 @@ import os
 import gitHelp as gh
 
 
-eV = 1.60217657E-19  # [J]
-me2 = (510.998918E3 * eV)**2  # squared electron mass [J^2/c^4]
-sigmaThompson = 6.6524E-29  # Thompson cross section [m^2]
+eV = 1.60217657e-19  # [J]
+me2 = (510.998918e3 * eV) ** 2  # squared electron mass [J^2/c^4]
+sigmaThomson = 6.6524e-29  # Thomson cross section [m^2]
 alpha = 1 / 137.035999074  # fine structure constant
 
 
 def sigmaPP(s):
-    """ Pair production cross section (Bethe-Heitler), see Lee 1996 """
+    """ Pair production cross section (Breit-Wheeler), see Lee 1996 """
     smin = 4 * me2
     if (s < smin):
-        return 0
-    else:
-        b = np.sqrt(1 - smin / s)
-        return sigmaThompson * 3 / 16 * (1 - b**2) * ((3 - b**4) * np.log((1 + b) / (1 - b)) - 2 * b * (2 - b**2))
+        return 0.
+
+    b = np.sqrt(1 - smin / s)
+    return sigmaThomson * 3 / 16 * (1 - b**2) * ((3 - b**4) * (np.log1p(b) - np.log1p(-b)) - 2 * b * (2 - b**2))
 
 
 def sigmaDPP(s):
@@ -27,8 +27,8 @@ def sigmaDPP(s):
     smin = 16 * me2
     if (s < smin):
         return 0
-    else:
-        return 6.45E-34 * (1 - smin / s)**6
+
+    return 6.45E-34 * (1 - smin / s)**6
 
 
 def sigmaICS(s):
@@ -36,12 +36,12 @@ def sigmaICS(s):
     smin = me2
     if (s < smin):  # numerically unstable close to smin
         return 0
-    else:
-        # note: formula unstable for (s - smin) / smin < 1E-5
-        b = (s - smin) / (s + smin)
-        A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
-        B = (2 - 3 * b**2 - b**3) / b**2 * np.log((1 + b) / (1 - b))
-        return sigmaThompson * 3 / 8 * smin / s / b * (A - B)
+
+    # note: formula unstable for (s - smin) / smin < 1E-5
+    b = (s - smin) / (s + smin)
+    A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
+    B = (2 - 3 * b**2 - b**3) / b**2 * (np.log1p(b) - np.log1p(-b))
+    return sigmaThomson * 3 / 8 * smin / s / b * (A - B)
 
 
 def sigmaTPP(s):
@@ -49,8 +49,8 @@ def sigmaTPP(s):
     beta = 28 / 9 * np.log(s / me2) - 218 / 27
     if beta < 0:
         return 0
-    else:
-        return sigmaThompson * 3 / 8 / np.pi * alpha * beta
+    
+    return sigmaThomson * 3 / 8 / np.pi * alpha * beta
 
 
 def getTabulatedXS(sigma, skin):
@@ -67,7 +67,7 @@ def getSmin(sigma):
     return {sigmaPP: 4 * me2,
             sigmaDPP: 16 * me2,
             sigmaTPP: np.exp((218 / 27) / (28 / 9)) * me2 - me2,
-            sigmaICS: 1E-9 * me2
+            sigmaICS: 1e-40 * me2
             }[sigma]
 
 
@@ -92,14 +92,14 @@ def process(sigma, field, name):
     # -------------------------------------------
     # tabulated values of s_kin = s - mc^2
     # Note: integration method (Romberg) requires 2^n + 1 log-spaced tabulation points
-    s_kin = np.logspace(6, 23, 2049) * eV**2
+    s_kin = np.logspace(4, 23, 2 ** 18 + 1) * eV**2
     xs = getTabulatedXS(sigma, s_kin)
     rate = interactionRate.calc_rate_s(s_kin, xs, E, field)
 
     # save
     fname = folder + '/rate_%s.txt' % field.name
     data = np.c_[np.log10(E / eV), rate]
-    fmt = '%.2f\t%.9g'
+    fmt = '%.2f\t%8.7e'
     try:
         git_hash = gh.get_git_revision_hash()
         header = ("%s interaction rates\nphoton field: %s\n"% (name, field.info)
@@ -120,14 +120,14 @@ def process(sigma, field, name):
 
     # tabulated values of s_kin = s - mc^2, limit to relevant range
     # Note: use higher resolution and then downsample
-    skin = np.logspace(6.2, 23, 1680 + 1) * eV**2
+    skin = np.logspace(4, 23, 380000 + 1) * eV**2
     skin = skin[skin > skin_min]
 
     xs = getTabulatedXS(sigma, skin)
     rate = interactionRate.calc_rate_s(skin, xs, E, field, cdf=True)
 
     # downsample
-    skin_save = np.logspace(6.2, 23, 168 + 1) * eV**2
+    skin_save = np.logspace(4, 23, 190 + 1) * eV**2
     skin_save = skin_save[skin_save > skin_min]
     rate_save = np.array([np.interp(skin_save, skin, r) for r in rate])
 
@@ -137,7 +137,7 @@ def process(sigma, field, name):
     data = np.r_[row0, data]  # prepend log10(s_kin/eV^2) as first row
 
     fname = folder + '/cdf_%s.txt' % field.name
-    fmt = '%.2f' + '\t%.9g' * np.shape(rate_save)[1]
+    fmt = '%.2f' + '\t%6.5e' * np.shape(rate_save)[1]
     try:
         git_hash = gh.get_git_revision_hash()
         header = ("%s cumulative differential rate\nphoton field: %s\n"% (name, field.info)
@@ -147,6 +147,8 @@ def process(sigma, field, name):
         header = ("%s cumulative differential rate\nphoton field: %s\n"% (name, field.info)
                   +"log10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row")
     np.savetxt(fname, data, fmt=fmt, header=header)
+
+    del data, rate, skin, skin_save, rate_save
 
 
 fields = [
