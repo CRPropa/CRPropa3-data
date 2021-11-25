@@ -3,6 +3,7 @@ import numpy as np
 import interactionRate
 import photonField
 import os
+import gitHelp as gh
 
 
 eV = 1.60217657e-19  # [J]
@@ -99,7 +100,14 @@ def process(sigma, field, name):
     fname = folder + '/rate_%s.txt' % field.name
     data = np.c_[np.log10(E / eV), rate]
     fmt = '%.2f\t%8.7e'
-    header = '%s interaction rates\nphoton field: %s\nlog10(E/eV), 1/lambda [1/Mpc]' % (name, field.info)
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("%s interaction rates\nphoton field: %s\n"% (name, field.info)
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"log10(E/eV), 1/lambda [1/Mpc]" )
+    except:
+        header = ("%s interaction rates\nphoton field: %s\n"% (name, field.info)
+                  +"log10(E/eV), 1/lambda [1/Mpc]")
     np.savetxt(fname, data, fmt=fmt, header=header)
 
     # -------------------------------------------
@@ -130,7 +138,14 @@ def process(sigma, field, name):
 
     fname = folder + '/cdf_%s.txt' % field.name
     fmt = '%.2f' + '\t%6.5e' * np.shape(rate_save)[1]
-    header = '%s cumulative differential rate\nphoton field: %s\nlog10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row' % (name, field.info)
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("%s cumulative differential rate\nphoton field: %s\n"% (name, field.info)
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"log10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row" )
+    except:
+        header = ("%s cumulative differential rate\nphoton field: %s\n"% (name, field.info)
+                  +"log10(E/eV), d(1/lambda)/ds_kin [1/Mpc/eV^2] for log10(s_kin/eV^2) as given in first row")
     np.savetxt(fname, data, fmt=fmt, header=header)
 
     del data, rate, skin, skin_save, rate_save

@@ -401,5 +401,5 @@ if __name__ == '__main__':
     grid()
     ylabel('$\epsilon^2 ~ dn/d\epsilon$ [eV/m$^3$]')
     xlabel('$\epsilon$ [eV]')
-    savefig('figures/EBL.png')
+    savefig('plots/EBL.png')
     show()

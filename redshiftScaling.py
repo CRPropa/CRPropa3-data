@@ -1,11 +1,15 @@
+import os
 import numpy as np
 from scipy.integrate import trapz
 import photonField
-
+import gitHelp as gh
 
 # Calculate the integral I(z) of the EBL spectral number density dn/depsilon as function of redshift z.
 # The ratio s(z) = I(z)/I(0) serves as a global scaling factor for all interactions with the EBL.
 # In contrast to CRPropa 2, the photon spectrum is integrated over the whole tabulated range.
+
+# Note: Redshift Scaling is now natively supported in CRPropa's PhotonBackground class. Therefore, 
+# the scaling files are not included in the download data and this script is only kept for comparison.
 
 fields = [
     photonField.EBL_Kneiske04(),
@@ -30,9 +34,19 @@ for field in fields:
         ts[i] = trapz(n, eps)
 
     ts /= ts[0]
-
+    
+    # output folder
+    folder = 'data/Scaling'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = 'Produced with crpropa-data version: '+git_hash+'\nredshift\t global evolution factor'
+    except:
+        header = 'redshift\t global evolution factor'
     np.savetxt(
-        'data/Scaling/scaling_%s.txt' % field.name,
+        'data/Scaling/%s_scaling.txt' % field.name,
         np.c_[tz, ts],
         fmt='%.2f\t%.4e',
-        header='redshift\t global evolution factor')
+        header=header)

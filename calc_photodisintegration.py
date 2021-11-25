@@ -2,6 +2,7 @@ import numpy as np
 import os
 import photonField
 import interactionRate
+import gitHelp as gh
 
 
 eV = 1.60217657e-19
@@ -79,12 +80,20 @@ for field in fields:
     # Calculate total interaction rates
     R1 = np.array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1sum])
     R2 = np.array([interactionRate.calc_rate_eps(eps2, x, gamma, field) for x in xs2sum])
-
+    
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Photodisintegration rate with the %s\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"Z, N, 1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps" )
+    except:
+        header = ("Photodisintegration rate with the %s\n"
+                  "Z, N, 1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps" % field.info)
     np.savetxt(
         folder + '/rate_%s.txt' % field.name,
         np.r_[np.c_[d1sum['Z'], d1sum['N'], R1], np.c_[d2sum['Z'], d2sum['N'], R2]],
         fmt='%i\t%i' + '\t%.9g' * 201,
-        header='Photodisintegration by the %s\nZ, N, 1/lambda [1/Mpc] for log10(gamma) = 6-14 in 201 steps' % field.info)
+        header=header)
 
     # Calculate branching ratios from exclusive interaction rates
     B1 = np.array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1exc])
@@ -97,12 +106,20 @@ for field in fields:
         B2[s] /= np.sum(B2[s], axis=0)
     B1 = np.nan_to_num(B1)  # set to 0 when total cross section is 0
     B2 = np.nan_to_num(B2)
-
+    
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Photodisintegration rate with the %s\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"Z, N, channel, branching ratio for log10(gamma) = 6-14 in 201 steps" )
+    except:
+        header = ("Photodisintegration rate with the %s\n"
+                  "Z, N, channel, branching ratio for log10(gamma) = 6-14 in 201 steps" % field.info)
     np.savetxt(
         folder + '/branching_%s.txt' % field.name,
         np.r_[np.c_[d1exc['Z'], d1exc['N'], d1exc['ch'], B1], np.c_[d2exc['Z'], d2exc['N'], d2exc['ch'], B2]],
         fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
-        header='Photo-disintegration with the %s\nZ, N, channel, branching ratio for log10(gamma) = 6-14 in 201 steps' % field.info)
+        header=header)
 
 
 # ----------------------------------------------------
@@ -114,7 +131,7 @@ fields = [
     photonField.URB_Protheroe96()
     ]
 
-for field in []:
+for field in fields:
     print(field.name)
 
     R3 = np.array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3sum])
@@ -123,9 +140,18 @@ for field in []:
         s = (d3exc['Z'] == d3sum['Z'][i]) * (d3exc['N'] == d3sum['N'][i]) * (d3exc['Zd'] == d3sum['Zd'][i]) * (d3exc['Nd'] == d3sum['Nd'][i])
         B3[s] /= R3[i]
     B3 = np.nan_to_num(B3)
-
+    
+    try:
+        git_hash = gh.get_git_revision_hash()
+        header = ("Emission probabilities of photons with discrete energies via photo-disintegration with the%s\n"% field.info
+                  +"Produced with crpropa-data version: "+git_hash+"\n"
+                  +"Z, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps" )
+    except:
+        header = ("Emission probabilities of photons with discrete energies via photo-disintegration with the%s\n"
+                  "Z, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps" % field.info)
     np.savetxt(
-        'data/Photodisintegration/photon_emission_%s.txt' % field.name.split('_')[0],
+        #'data/Photodisintegration/photon_emission_%s.txt' % field.name.split('_')[0],
+        'data/Photodisintegration/photon_emission_%s.txt' % field.name,
         np.c_[d3exc['Z'], d3exc['N'], d3exc['Zd'], d3exc['Nd'], d3exc['Ephoton'] * 1e6, B3],
         fmt='%i\t%i\t%i\t%i\t%.9g' + '\t%.9g' * 201,
-        header='Emission probabilities of photons with discrete energies via photo-disintegration with the %s\nZ, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps' % field.info)
+        header=header)

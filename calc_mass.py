@@ -1,5 +1,6 @@
 from pylab import *
 import crpropa
+import gitHelp as gh
 
 # This script generates a table of nuclear mass for all combinations (Z,N) Z=0..26, N=0..30
 # For measured atoms, the NIST data table is used.
@@ -28,8 +29,7 @@ for line in fin.readlines():
 
     if line.startswith('Relative Atomic Mass'):
         line = line.strip('Relative Atomic Mass = ')
-        relAtomicMass = line.translate(None, '()#\n')
-
+        relAtomicMass = line[:line.find('(')]
         n = a - z
         if a == 1:
             continue # skip H-1
@@ -54,6 +54,14 @@ for z in range(27):
 
 ## Write to file
 fout = open('data/nuclear_mass.txt', 'w')
+
+# Add git hash of crpropa-data repository to header
+try:
+    git_hash = gh.get_git_revision_hash()
+    fout.write('# Produced with crpropa-data version: '+git_hash+'\n')
+except:
+    pass 
+
 fout.write('# Nuclear Mass of Isotopes Z < 26 and A < 56\n')
 for z in range(27):
     for n in range(31):
