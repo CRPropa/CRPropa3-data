@@ -49,12 +49,29 @@ def calc_rate_s(s_kin, xs, E, field, z=0, cdf=False):
         interaction rate 1/lambda(gamma) [1/Mpc] or
         cumulative differential rate d(1/lambda)/d(s_kin) [1/Mpc/J^2]
     """
-    F = cumulative_trapezoid(x=s_kin, y=s_kin * xs, initial=0)
-    n = field.getDensity(np.outer(1. / (4 * E), s_kin), z)
+
     if cdf:
-        y = n * F / s_kin**2
-        return cumulative_trapezoid(x=s_kin, y=y, initial=0) / 2 / np.expand_dims(E, -1) * Mpc
+        # precalc the photon density integral 
+        Emax = field.getEmax()
+        Emin = min(s_kin) / 4 / max(E)
+        alpha = np.logspace(np.log10(Emin), np.log10(Emax), 10000)
+        def integrand(E):
+            return field.getDensity(E) / E**2
+        I_gamma = np.zeros_like(alpha)
+        for i in range(len(alpha)):
+            I_gamma[i] = quad(integrand, a = alpha[i], b = Emax)[0]
+
+        # interpolate
+        I = np.zeros((len(E), len(s_kin)))
+        for j in range(len(E)):
+            I[j,:] = np.interp(s_kin/ 4 / E[j], alpha, I_gamma)
+
+        # calculate cdf
+        y = np.array([xs * s_kin for i in range(len(E))]) * I
+        return cumulative_trapezoid(y = y, x = s_kin, initial=0) / 8 / np.expand_dims(E, -1)**2 * Mpc    
     else:
+        F = cumulative_trapezoid(x=s_kin, y=s_kin * xs, initial=0)
+        n = field.getDensity(np.outer(1. / (4 * E), s_kin), z)
         y = n * F / s_kin
         ds = mean_log_spacing(s_kin)
         return romb(y, dx=ds) / 2 / E * Mpc
