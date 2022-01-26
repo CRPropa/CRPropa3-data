@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import cumulative_trapezoid, romb
+from scipy.integrate import cumulative_trapezoid, romb, quad
 
 
 eV = 1.60217657e-19  # [J]
