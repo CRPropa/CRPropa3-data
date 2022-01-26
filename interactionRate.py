@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import cumtrapz, romb
+from scipy.integrate import cumulative_trapezoid, romb
 
 
 eV = 1.60217657e-19  # [J]
@@ -22,11 +22,11 @@ def calc_rate_eps(eps, xs, gamma, field, z=0, cdf=False):
         interaction rate 1/lambda(gamma) [1/Mpc] or
         cumulative differential rate d(1/lambda)/d(s_kin) [1/Mpc/J^2]
     """
-    F = cumtrapz(x=eps, y=eps * xs, initial=0)
+    F = cumulative_trapezoid(x=eps, y=eps * xs, initial=0)
     n = field.getDensity(np.outer(1. / (2 * gamma), eps), z)
     if cdf:
         y = n * F / eps**2
-        return cumtrapz(x=eps, y=y, initial=0) / np.expand_dims(gamma, -1) * Mpc
+        return cumulative_trapezoid(x=eps, y=y, initial=0) / np.expand_dims(gamma, -1) * Mpc
     else:
         y = n * F / eps
         dx = mean_log_spacing(eps)
@@ -49,11 +49,11 @@ def calc_rate_s(s_kin, xs, E, field, z=0, cdf=False):
         interaction rate 1/lambda(gamma) [1/Mpc] or
         cumulative differential rate d(1/lambda)/d(s_kin) [1/Mpc/J^2]
     """
-    F = cumtrapz(x=s_kin, y=s_kin * xs, initial=0)
+    F = cumulative_trapezoid(x=s_kin, y=s_kin * xs, initial=0)
     n = field.getDensity(np.outer(1. / (4 * E), s_kin), z)
     if cdf:
         y = n * F / s_kin**2
-        return cumtrapz(x=s_kin, y=y, initial=0) / 2 / np.expand_dims(E, -1) * Mpc
+        return cumulative_trapezoid(x=s_kin, y=y, initial=0) / 2 / np.expand_dims(E, -1) * Mpc
     else:
         y = n * F / s_kin
         ds = mean_log_spacing(s_kin)
