@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, romb, quad
 
-
 eV = 1.60217657e-19  # [J]
 Mpc = 3.08567758e22  # [m]
 
@@ -51,20 +50,13 @@ def calc_rate_s(s_kin, xs, E, field, z=0, cdf=False):
     """
 
     if cdf:
-        # precalc the photon density integral 
-        Emax = field.getEmax()
-        Emin = min(s_kin) / 4 / max(E)
-        alpha = np.logspace(np.log10(Emin), np.log10(Emax), 10000)
-        def integrand(E):
-            return field.getDensity(E) / E**2
-        I_gamma = np.zeros_like(alpha)
-        for i in range(len(alpha)):
-            I_gamma[i] = quad(integrand, a = alpha[i], b = Emax)[0]
+        file = "data/fieldDensity/" + field.name + ".txt"
+        densityIntegral = np.loadtxt(file)
 
         # interpolate
         I = np.zeros((len(E), len(s_kin)))
         for j in range(len(E)):
-            I[j,:] = np.interp(s_kin/ 4 / E[j], alpha, I_gamma)
+            I[j,:] = np.interp(s_kin/ 4 / E[j], densityIntegral[:,0], densityIntegral[:,1])
 
         # calculate cdf
         y = np.array([xs * s_kin for i in range(len(E))]) * I

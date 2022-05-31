@@ -4,7 +4,7 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
-
+from scipy.integrate import quad
 
 eV = 1.60217657e-19  # [J]
 me2 = (510.998918e3 * eV) ** 2  # squared electron mass [J^2/c^4]
@@ -75,6 +75,42 @@ def getEmin(sigma, field):
     """ Return minimum required cosmic ray energy for interaction *sigma* with *field* """
     return getSmin(sigma) / 4 / field.getEmax()
 
+def calculateDensityIntegral(field):
+    """ Precalculate the integral over the density 
+        int_{Emin}^{Emax} n(eps) / eps^2  deps 
+        and save as a file
+    """
+    # precalc the photon density integral 
+    Emax = field.getEmax()
+    Emin =  1e4 / 4 / 1e23 * eV # min(s_kin) / 4 / max(E)
+    alpha = np.logspace(np.log10(Emin), np.log10(Emax), 10000)
+
+    # check if file already exist
+    folder = "data/fieldDensity/"
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
+    file = folder + field.name + ".txt"
+    if os.path.isfile(file):
+        return # file already existst no calculation necessary
+
+    # calculate integral
+    def integrand(E):
+        return field.getDensity(E) / E**2
+    I_gamma = np.zeros_like(alpha)
+    for i in range(len(alpha)):
+        I_gamma[i] = quad(integrand, a = alpha[i], b = Emax, full_output=1)[0]
+
+    # save file
+    header = "# calculate integral n(e)/e^2 de from eMin to eMax, where eMax is the maximal photon energy of the background \n"
+    try: 
+        git_hash = gh.get_git_revision_hash()
+        header += "Produced with crpropa-data version: "+git_hash+"\n"
+        header += "# eMin [eV]\tintegral\n"
+    except:
+        header += "# eMin [eV]\tintegral\n"
+    data = np.c_[alpha, I_gamma]
+    fmt = '%.4e\t%8.7e'
+    np.savetxt(file, data, fmt = fmt, header = header)
 
 def process(sigma, field, name):
     # output folder
@@ -86,6 +122,12 @@ def process(sigma, field, name):
     Emin = getEmin(sigma, field)
     E = np.logspace(9, 23, 281) * eV
     E = E[E > Emin]
+    
+    # -------------------------------------------
+    # calculate density intergral if neccesary
+    # -------------------------------------------
+    if not os.path.isfile("data/fieldDensity/" + field.name + ".txt"):
+        calculateDensityIntegral(field)
 
     # -------------------------------------------
     # calculate interaction rates
@@ -153,22 +195,22 @@ def process(sigma, field, name):
 
 fields = [
     photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12(),
-    photonField.EBL_Stecker16('lower'),
-    photonField.EBL_Stecker16('upper'),
-    photonField.URB_Protheroe96(),
-    photonField.URB_Fixsen11(),
-    photonField.URB_Nitu21()
+    # photonField.EBL_Kneiske04(),
+    # photonField.EBL_Stecker05(),
+    # photonField.EBL_Franceschini08(),
+    # photonField.EBL_Finke10(),
+    # photonField.EBL_Dominguez11(),
+    # photonField.EBL_Gilmore12(),
+    # photonField.EBL_Stecker16('lower'),
+    # photonField.EBL_Stecker16('upper'),
+    # photonField.URB_Protheroe96(),
+    # photonField.URB_Fixsen11(),
+    # photonField.URB_Nitu21()
     ]
 
 for field in fields:
     print(field.name)
-    process(sigmaPP, field, 'EMPairProduction')
-    process(sigmaDPP, field, 'EMDoublePairProduction')
-    process(sigmaTPP, field, 'EMTripletPairProduction')
+    # process(sigmaPP, field, 'EMPairProduction')
+    # process(sigmaDPP, field, 'EMDoublePairProduction')
+    # process(sigmaTPP, field, 'EMTripletPairProduction')
     process(sigmaICS, field, 'EMInverseComptonScattering')
