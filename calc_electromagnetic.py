@@ -75,42 +75,6 @@ def getEmin(sigma, field):
     """ Return minimum required cosmic ray energy for interaction *sigma* with *field* """
     return getSmin(sigma) / 4 / field.getEmax()
 
-def calculateDensityIntegral(field):
-    """ Precalculate the integral over the density 
-        int_{Emin}^{Emax} n(eps) / eps^2  deps 
-        and save as a file
-    """
-    # precalc the photon density integral 
-    Emax = field.getEmax()
-    Emin =  1e4 / 4 / 1e23 * eV # min(s_kin) / 4 / max(E)
-    alpha = np.logspace(np.log10(Emin), np.log10(Emax), 10000)
-
-    # check if file already exist
-    folder = "data/fieldDensity/"
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
-    file = folder + field.name + ".txt"
-    if os.path.isfile(file):
-        return # file already existst no calculation necessary
-
-    # calculate integral
-    def integrand(E):
-        return field.getDensity(E) / E**2
-    I_gamma = np.zeros_like(alpha)
-    for i in range(len(alpha)):
-        I_gamma[i] = quad(integrand, a = alpha[i], b = Emax, full_output=1)[0]
-
-    # save file
-    header = "# calculate integral n(e)/e^2 de from eMin to eMax, where eMax is the maximal photon energy of the background \n"
-    try: 
-        git_hash = gh.get_git_revision_hash()
-        header += "Produced with crpropa-data version: "+git_hash+"\n"
-        header += "# eMin [eV]\tintegral\n"
-    except:
-        header += "# eMin [eV]\tintegral\n"
-    data = np.c_[alpha, I_gamma]
-    fmt = '%.4e\t%8.7e'
-    np.savetxt(file, data, fmt = fmt, header = header)
 
 def process(sigma, field, name):
     # output folder
@@ -123,12 +87,6 @@ def process(sigma, field, name):
     E = np.logspace(9, 23, 281) * eV
     E = E[E > Emin]
     
-    # -------------------------------------------
-    # calculate density intergral if neccesary
-    # -------------------------------------------
-    if not os.path.isfile("data/fieldDensity/" + field.name + ".txt"):
-        calculateDensityIntegral(field)
-
     # -------------------------------------------
     # calculate interaction rates
     # -------------------------------------------
