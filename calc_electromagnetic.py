@@ -153,22 +153,22 @@ def process(sigma, field, name):
 
 fields = [
     photonField.CMB(),
-    # photonField.EBL_Kneiske04(),
-    # photonField.EBL_Stecker05(),
-    # photonField.EBL_Franceschini08(),
-    # photonField.EBL_Finke10(),
-    # photonField.EBL_Dominguez11(),
-    # photonField.EBL_Gilmore12(),
-    # photonField.EBL_Stecker16('lower'),
-    # photonField.EBL_Stecker16('upper'),
-    # photonField.URB_Protheroe96(),
-    # photonField.URB_Fixsen11(),
-    # photonField.URB_Nitu21()
+    photonField.EBL_Kneiske04(),
+    photonField.EBL_Stecker05(),
+    photonField.EBL_Franceschini08(),
+    photonField.EBL_Finke10(),
+    photonField.EBL_Dominguez11(),
+    photonField.EBL_Gilmore12(),
+    photonField.EBL_Stecker16('lower'),
+    photonField.EBL_Stecker16('upper'),
+    photonField.URB_Protheroe96(),
+    photonField.URB_Fixsen11(),
+    photonField.URB_Nitu21()
     ]
 
 for field in fields:
     print(field.name)
-    # process(sigmaPP, field, 'EMPairProduction')
-    # process(sigmaDPP, field, 'EMDoublePairProduction')
-    # process(sigmaTPP, field, 'EMTripletPairProduction')
+    process(sigmaPP, field, 'EMPairProduction')
+    process(sigmaDPP, field, 'EMDoublePairProduction')
+    process(sigmaTPP, field, 'EMTripletPairProduction')
     process(sigmaICS, field, 'EMInverseComptonScattering')
