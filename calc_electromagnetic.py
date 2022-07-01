@@ -4,7 +4,7 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
-from scipy.integrate import quad
+
 
 eV = 1.60217657e-19  # [J]
 me2 = (510.998918e3 * eV) ** 2  # squared electron mass [J^2/c^4]
