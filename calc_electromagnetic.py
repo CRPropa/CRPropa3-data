@@ -86,7 +86,7 @@ def process(sigma, field, name):
     Emin = getEmin(sigma, field)
     E = np.logspace(9, 23, 281) * eV
     E = E[E > Emin]
-
+    
     # -------------------------------------------
     # calculate interaction rates
     # -------------------------------------------
