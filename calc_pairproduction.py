@@ -74,30 +74,19 @@ def lossRate(gamma, field, z=0):
     a = alpha * r0**2 * me / mp * Mpc
     return a * rate / gamma, a * err / gamma
 
+def process(field):
+    # -------------------------------------------------
+    # Generate tables for energy loss rate
+    # -------------------------------------------------
+    gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
 
-# -------------------------------------------------
-# Generate tables for energy loss rate
-# -------------------------------------------------
-gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
+        
+    # output folder
+    folder = 'data/ElectronPairProduction'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12(),
-    photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower')]
-    
-# output folder
-folder = 'data/ElectronPairProduction'
-if not os.path.exists(folder):
-    os.makedirs(folder)
 
-for field in fields:
-    print(field.name)
     rate = lossRate(gamma, field)[0]
     s = (rate > 1e-12)  # truncate if loss rate is < 10^-12 / Mpc
 
@@ -115,23 +104,40 @@ for field in fields:
     np.savetxt(fname, data, fmt=fmt, header=header)
 
 
-# -------------------------------------------------
-# Reformat CRPropa2 tables of differential spectrum of secondary electrons
-# This should be reimplemented for extension to the other backgrounds,
-# cross-checking and documentation.
-# -------------------------------------------------
-d1 = np.genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
-d2 = np.genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
+if __name__ == "__main__":
+    # -------------------------------------------------
+    # Reformat CRPropa2 tables of differential spectrum of secondary electrons
+    # This should be reimplemented for extension to the other backgrounds,
+    # cross-checking and documentation.
+    # -------------------------------------------------
+    d1 = np.genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
+    d2 = np.genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
 
-# amplitudes dN/dEe(Ep)
-A1 = d1[2].reshape((70, 170))  # CMB
-A2 = d2[2].reshape((70, 170))  # CMB + IRB (which?)
-A3 = A2 - A1  # IRB only
+    # amplitudes dN/dEe(Ep)
+    A1 = d1[2].reshape((70, 170))  # CMB
+    A2 = d2[2].reshape((70, 170))  # CMB + IRB (which?)
+    A3 = A2 - A1  # IRB only
 
-# # normalize to 1
-# A1 = (A1.T / sum(A1, axis=1)).T
-# A3 = (A3.T / sum(A3, axis=1)).T
+    # # normalize to 1
+    # A1 = (A1.T / sum(A1, axis=1)).T
+    # A3 = (A3.T / sum(A3, axis=1)).T
 
-# save
-np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
-np.savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')
+    # save
+    np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
+    np.savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')
+
+
+    fields = [
+        photonField.CMB(),
+        photonField.EBL_Kneiske04(),
+        photonField.EBL_Stecker05(),
+        photonField.EBL_Franceschini08(),
+        photonField.EBL_Finke10(),
+        photonField.EBL_Dominguez11(),
+        photonField.EBL_Gilmore12(),
+        photonField.EBL_Stecker16('upper'),
+        photonField.EBL_Stecker16('lower')]
+
+    for field in fields:
+        print(field.name)
+        process(field)
