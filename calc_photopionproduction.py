@@ -22,7 +22,6 @@ xs2 = d[1, :2049] * 1e-34  # [m^2]
 
 
 def process(field):
-    print(field.name)
 
     # output folder
     folder = 'data/PhotoPionProduction'
@@ -94,4 +93,5 @@ if __name__ == "__main__":
     ]
 
     for field in fields:
+        print(field.name)
         process(field)
