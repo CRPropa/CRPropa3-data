@@ -131,7 +131,6 @@ if __name__ == "__main__":
 # Calculate photon emission probabilities
 # ----------------------------------------------------
 def processEmission(field):
-    print(field.name)
 
     folder = "data/Photodisintegration/"
     if not os.path.isdir:
@@ -168,5 +167,6 @@ if __name__ == "__main__":
     ]
 
     for field in fields:
+        print(field.name)
         processEmission(field)
 
