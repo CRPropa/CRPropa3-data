@@ -75,9 +75,11 @@ def lossRate(gamma, field, z=0):
     return a * rate / gamma, a * err / gamma
 
 def process(field):
-    # -------------------------------------------------
-    # Generate tables for energy loss rate
-    # -------------------------------------------------
+    """
+        Generate tables for energy loss rate
+
+        field : photon field as defined in photonField.py
+    """ 
     gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
 
         

@@ -9,6 +9,7 @@ import gitHelp as gh
 
 class Decay:
     def load(self, s):
+        """ extract decay parameter form a given line of the data file. """
         l = s.split('\t')
         self.Z = int(l[2])
         self.N = int(l[3])
@@ -38,12 +39,15 @@ class Decay:
         return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f' % (self.Z, self.N, self.mode, self.tau, self.br)
 
     def isStable(self):
+        """ returns if the nucleus is stable or not"""
         return self.tau == inf
 
     def isBetaPlus(self):
+        """ returns if the nucleus has a beta plus decay mode"""
         return self.mode.find('E') > -1
 
     def isBetaMinus(self):
+        """ returns if the nucleus has a beta minus decay mode"""
         return self.mode.find('B') > -1
 
 class GammaEmission:

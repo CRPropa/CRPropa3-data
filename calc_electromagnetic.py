@@ -77,6 +77,14 @@ def getEmin(sigma, field):
 
 
 def process(sigma, field, name):
+    """ 
+        calculate the interaction rates for a given process on a given photon field 
+
+        sigma : crossection (function) of the EM-process
+        field : photon field as defined in photonField.py
+        name  : name of the process which will be calculated. Necessary for the naming of the data folder
+    """
+
     # output folder
     folder = 'data/' + name
     if not os.path.exists(folder):

@@ -22,6 +22,11 @@ xs2 = d[1, :2049] * 1e-34  # [m^2]
 
 
 def process(field):
+    """ 
+        calculate the interction rate on the given photonfield
+        
+        field : photon field as defined in photonField.py
+    """
 
     # output folder
     folder = 'data/PhotoPionProduction'

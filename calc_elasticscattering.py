@@ -7,6 +7,8 @@ import gitHelp as gh
 eV = 1.60217657e-19
 
 def process(field):
+    """ calculate the interaction rates for a given photon field"""
+
     # output folder
     folder = 'data/ElasticScattering'
     if not os.path.exists(folder):
@@ -78,3 +80,4 @@ if __name__ == "__main__":
 
     for field in fields:
         print(field.name)
+        process(field)

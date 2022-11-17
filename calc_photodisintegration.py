@@ -131,6 +131,7 @@ if __name__ == "__main__":
 # Calculate photon emission probabilities
 # ----------------------------------------------------
 def processEmission(field):
+    """ calculate photon emission probabilities """
 
     folder = "data/Photodisintegration/"
     if not os.path.isdir:
@@ -160,11 +161,13 @@ def processEmission(field):
         header=header)
 
 if __name__ == "__main__":
+    # only representive fields of each type (CMB, EBL, URB) to save data space
     fields = [
         photonField.CMB(),
         photonField.EBL_Gilmore12(),
         photonField.URB_Protheroe96()
     ]
+
 
     for field in fields:
         print(field.name)

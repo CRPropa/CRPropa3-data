@@ -38,8 +38,8 @@ def compute_spectrum(x, outputName):
       Wiley, 3rd ed., p. 681, eq. 14.91
 
     Input
-    . x: fraction between photon frequency and critical frequency
-    . outputName: name of output file
+      x:    fraction between photon frequency and critical frequency
+      outputName:   name of output file
     """
     cdf = synchrotron_spectrum(x)
     lx = np.log10(x)
@@ -58,7 +58,8 @@ def plot(specFile, plotFile):
     Make simple plot for sanity checks.
 
     Input
-    . specFile: file containing the synchrotron spectrum
+      specFile: file containing the synchrotron spectrum
+      plotFile: file to save the plotted figure
     """
     data = np.loadtxt(specFile)
     x = 10 ** data[:, 0]

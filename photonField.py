@@ -70,6 +70,8 @@ class EBL:
 # EBL (optical and infrared) models
 # --------------------------------------------------------
 class EBL_Kneiske04(EBL):
+    """ IRB model from Kneiske 2004 """
+
     name = 'IRB_Kneiske04'
     info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
     files = datadir + 'EBL_Kneiske_2004/all_z'
@@ -86,6 +88,8 @@ class EBL_Kneiske04(EBL):
             self.data[z] = eps, n[i]
 
 class EBL_Kneiske10(EBL):
+    """ IRB model from Kneiske 2010 """
+
     name = 'IRB_Kneiske10'
     info = 'cosmic infrared and optical background radiation lower limit model of Kneiske et al. 2010'
     files = datadir + 'EBL_Kneiske_2010/%.1f'
@@ -103,6 +107,8 @@ class EBL_Kneiske10(EBL):
             self.data[z] = eps[::-1], n[::-1]
 
 class EBL_Dole06(EBL):
+    """ IRB model from Dole 2006"""
+
     name = 'IRB_Dole06'
     info = 'cosmic infrared and optical background radiation model of Dole et al. 2006'
     files = datadir + 'EBL_Dole_2006/0.0'
@@ -118,6 +124,8 @@ class EBL_Dole06(EBL):
         self.data[0] = eps[::-1], n[::-1]
 
 class EBL_Franceschini08(EBL):
+    """ IRB model from Fanceschini 2008 """
+
     name = 'IRB_Franceschini08'
     info = 'cosmic infrared and optical background radiation model of Franceschini et al. 2008'
     files = datadir + 'EBL_Franceschini_2008/%1.1f'
@@ -135,6 +143,8 @@ class EBL_Franceschini08(EBL):
             self.data[z] = eps, n
 
 class EBL_Stecker05(EBL):
+    """ IRB model from Stecker 2005 """
+
     name = 'IRB_Stecker05'
     info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
     files = datadir + 'EBL_Stecker_2005/data2.txt'
@@ -152,6 +162,8 @@ class EBL_Stecker05(EBL):
             self.data[z] = eps, n[i] / (1+z)**3
 
 class EBL_Finke10(EBL):
+    """ IRB model from FInke 2010"""
+
     name = 'IRB_Finke10'
     info = 'cosmic infrared and optical background radiation model of Finke et al. 2010 (Model C)'
     files = datadir + 'EBL_Finke_2010/z%.2f.dat'
@@ -168,6 +180,8 @@ class EBL_Finke10(EBL):
             self.data[z] = eps, n
 
 class EBL_Gilmore12(EBL):
+    """ IRB model from Gilmore 2012 """
+
     name = 'IRB_Gilmore12'
     info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (Evolving dust model, arXiv:1104.0671)'
     files = datadir + 'EBL_Gilmore_2012/eblflux_fiducial.dat'
@@ -185,7 +199,14 @@ class EBL_Gilmore12(EBL):
             self.data[z] = eps[::-1], n[i][::-1]
 
 class EBL_Dominguez11(EBL):
+    """ IRB model from Dominguez 2011 """
+
     def __init__(self, which='best'):
+        """ Constructor
+        
+        Input:
+          which : \"best\" for the best fit model, \"upper\" or \"lower\" for the upper/lower uncertaincy.
+        """
         EBL.__init__(self)
     
         if which == 'best':
@@ -212,7 +233,15 @@ class EBL_Dominguez11(EBL):
             self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
 
 class EBL_Stecker16(EBL):
+    """ IRB model from Stecker 2016 """
+
     def __init__(self, which='upper'):
+        """
+        Constructor 
+        
+        Input
+          which : \"upper\" or \"lower\" for an estimation of the uncertaincy
+        """
         EBL.__init__(self)
 
         if which == 'upper':
@@ -368,7 +397,7 @@ class URB_Nitu21:
         return 1e12 * Hz * h
 
 # --------------------------------------------------------
-#
+#   main:   plot comparison of IRB models
 # --------------------------------------------------------
 if __name__ == '__main__':
     from pylab import *
