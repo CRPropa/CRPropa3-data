@@ -8,7 +8,8 @@ Interactions between cosmic ray nuclei and background photons
  - calc_ppp.py : photo-pion production
  - calc_photodisintegration.py : photodisintegration
  - calc_elasticscattering.py   : elastic scattering on the nuclear structure
- An example to create the necessary data files for a custom photon field can be found in the [CRPropa3 documentation](https://crpropa.github.io/CRPropa3/index.html).
+
+An example to create the necessary data files for a custom photon field can be found in the [CRPropa3 documentation](https://crpropa.github.io/CRPropa3/index.html).
 
 Interactions between cosmic ray photons / electrons and background photons
  - calc_electromagnetic.py
