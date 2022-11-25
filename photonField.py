@@ -205,7 +205,7 @@ class EBL_Dominguez11(EBL):
         """ Constructor
         
         Input:
-          which : \"best\" for the best fit model, \"upper\" or \"lower\" for the upper/lower uncertaincy.
+          which : \"best\" for the best fit model, \"upper\" or \"lower\" for the upper/lower uncertainty.
         """
         EBL.__init__(self)
     
@@ -240,7 +240,7 @@ class EBL_Stecker16(EBL):
         Constructor 
         
         Input
-          which : \"upper\" or \"lower\" for an estimation of the uncertaincy
+          which : \"upper\" or \"lower\" for an estimation of the uncertainty
         """
         EBL.__init__(self)
 

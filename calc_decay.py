@@ -9,7 +9,7 @@ import gitHelp as gh
 
 class Decay:
     def load(self, s):
-        """ extract decay parameter form a given line of the data file. """
+        """ extract decay parameter form a given line from the data file. """
         l = s.split('\t')
         self.Z = int(l[2])
         self.N = int(l[3])
