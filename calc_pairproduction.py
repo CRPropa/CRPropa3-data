@@ -82,13 +82,6 @@ def process(field):
     """ 
     gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
 
-        
-    # output folder
-    folder = 'data/ElectronPairProduction'
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-
     rate = lossRate(gamma, field)[0]
     s = (rate > 1e-12)  # truncate if loss rate is < 10^-12 / Mpc
 
@@ -123,6 +116,11 @@ if __name__ == "__main__":
     # # normalize to 1
     # A1 = (A1.T / sum(A1, axis=1)).T
     # A3 = (A3.T / sum(A3, axis=1)).T
+
+    # output folder
+    folder = 'data/ElectronPairProduction'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
     # save
     np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
