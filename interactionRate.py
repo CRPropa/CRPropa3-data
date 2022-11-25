@@ -53,7 +53,7 @@ def calc_rate_s(s_kin, xs, E, field, z=0, cdf=False):
     if cdf:
         # precalculate the field integral if it not exists and load it afterwards
         calculateDensityIntegral(field)
-        file = "data/fieldDensity/" + field.name + ".txt"
+        file = "temp/fieldDensity/" + field.name + ".txt"
         densityIntegral = np.loadtxt(file)
 
         # interpolate
@@ -81,7 +81,7 @@ def calculateDensityIntegral(field):
     """
 
     # check if file already exist
-    folder = "data/fieldDensity/"
+    folder = "temp/fieldDensity/"
     if not os.path.isdir(folder):
         os.makedirs(folder)
     file = folder + field.name + ".txt"
