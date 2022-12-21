@@ -66,6 +66,9 @@ class EBL:
         """Maximum tabulated photon energy in [J]"""
         return self.data[z][0][-1]
 
+    def getEnergy(self, z=0):
+        return self.data[z][0][:]
+
 # --------------------------------------------------------
 # EBL (optical and infrared) models
 # --------------------------------------------------------
@@ -162,7 +165,7 @@ class EBL_Stecker05(EBL):
             self.data[z] = eps, n[i] / (1+z)**3
 
 class EBL_Finke10(EBL):
-    """ IRB model from FInke 2010"""
+    """ IRB model from Finke 2010"""
 
     name = 'IRB_Finke10'
     info = 'cosmic infrared and optical background radiation model of Finke et al. 2010 (Model C)'
