@@ -98,13 +98,11 @@ def process(field):
                   "log10(gamma)\t1/gamma dgamma/dx [1/Mpc]" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
-
-if __name__ == "__main__":
-    # -------------------------------------------------
-    # Reformat CRPropa2 tables of differential spectrum of secondary electrons
-    # This should be reimplemented for extension to the other backgrounds,
-    # cross-checking and documentation.
-    # -------------------------------------------------
+def reformat_secondary_rates():
+    """Reformat CRPropa2 tables of differential spectrum of secondary electrons
+    This should be reimplemented for extension to the other backgrounds,
+    cross-checking and documentation.
+    """
     d1 = np.genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
     d2 = np.genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
 
@@ -126,6 +124,10 @@ if __name__ == "__main__":
     np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
     np.savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')
 
+
+if __name__ == "__main__":
+    
+    reformat_secondary_rates()
 
     fields = [
         photonField.CMB(),
