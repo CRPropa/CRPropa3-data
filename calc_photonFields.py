@@ -274,8 +274,13 @@ def createField(name, info, energy, redshift, photonDensity, outDir):
     print("done: " + name)
 
 
-if __name__ == "__main__":
-
+def process():
+    """Processing of the listed photon fields
+    
+    NOTE: Make sure that this list is synchronized
+    with the photon fields used in calc_all.py.
+    """
+    
     outDir = "data/Scaling"
     if not os.path.isdir(outDir):
         os.mkdir(outDir)
@@ -293,3 +298,6 @@ if __name__ == "__main__":
     URB_Protheroe96(outDir)
     URB_Fixsen11(outDir)
     URB_Nitu21(outDir)
+
+if __name__ == "__main__":
+    process()
