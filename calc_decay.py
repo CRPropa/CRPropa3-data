@@ -2,6 +2,7 @@ from numpy import *
 import crpropa as crp
 from scipy.integrate import quad
 import gitHelp as gh
+import os
 
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
@@ -9,7 +10,7 @@ import gitHelp as gh
 
 class Decay:
     def load(self, s):
-        """ extract decay parameter form a given line of the data file. """
+        """ extract decay parameter from a given line of the data file. """
         l = s.split('\t')
         self.Z = int(l[2])
         self.N = int(l[3])
@@ -308,7 +309,6 @@ for Z in range(27):
             f = pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
             if f < 0:
                 print (Qec)
-                print (I1(Q/Qe))
             print (d, ' <- beta+ correction %.1e'%f)
             d.tau *= 1 + f
 
@@ -353,8 +353,11 @@ for z in range(0,27):
             d.mode = 'N'
         dList.append(d)
 
-
-### save decay table
+# output folder
+folder = 'data'
+if not os.path.exists(folder):
+    os.makedirs(folder)
+# save decay table
 fout = open('data/nuclear_decay.txt','w')
 # Add git hash of crpropa-data repository to header
 try:
