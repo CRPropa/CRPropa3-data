@@ -10,14 +10,9 @@ from scipy import integrate
 import photonField
 import gitHelp as gh
 
+from crpropa import Mpc, c_squared, mass_electron, mass_proton, radius_electron, alpha_finestructure
 
-eV = 1.60217657e-19  # [J]
-Mpc = 3.08567758e22  # [m]
-c0 = 299792458.  # [m/s]
-r0 = 2.817940e-15  # classical electron radius [m]
-alpha = 7.297352e-3  # fine-structure constant
-me = 9.10938291e-31  # electron mass [kg]
-me_c2 = me * c0**2  # electron mass in [J/c^2]
+me_c2 = mass_electron * c_squared  # electron mass in [J/c^2]
 mp = 1.67262178e-27  # proton mass [kg]
 
 
@@ -71,7 +66,7 @@ def lossRate(gamma, field, z=0):
             integrand, lkmin, lkmax, points=lksep, args=(g, field))
 
     # prefactor of equation 3.11 (C92) and conversion [1/s] --> [1/Mpc]
-    a = alpha * r0**2 * me / mp * Mpc
+    a = alpha_finestructure * radius_electron**2 * mass_electron / mass_proton * Mpc
     return a * rate / gamma, a * err / gamma
 
 def process(field):

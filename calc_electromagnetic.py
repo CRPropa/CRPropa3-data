@@ -4,10 +4,9 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
+from crpropa import eV, mass_electron, c_light
 
-
-eV = 1.60217657e-19  # [J]
-me2 = (510.998918e3 * eV) ** 2  # squared electron mass [J^2/c^4]
+me2 = (mass_electron*c_light**2.) ** 2  # squared electron mass [J^2/c^4]
 sigmaThomson = 6.6524e-29  # Thomson cross section [m^2]
 alpha = 1 / 137.035999074  # fine structure constant
 

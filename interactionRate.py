@@ -1,9 +1,8 @@
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, romb, quad
 import os
+from crpropa import eV, Mpc
 
-eV = 1.60217657e-19  # [J]
-Mpc = 3.08567758e22  # [m]
 
 
 def calc_rate_eps(eps, xs, gamma, field, z=0, cdf=False):

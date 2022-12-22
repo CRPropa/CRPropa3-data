@@ -17,14 +17,11 @@ import pandas as pd
 import os
 import gitHelp as gh
 import photonField as pf
+import crpropa as crp
 
 
-eV = 1.60217657e-19  # [J]
-cm3 = 1e-6  # [m^3]
-c0 = 299792458  # [m/s]
-h = 6.62606957e-34  # [m^2 kg / s]
-erg = 1e-7  # [J]
-kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
+#eV = 1.60217657e-19  # [J]
+cm3 = crp.centimeter**3 # [m^3]
 
 def IRB_Stecker05(fileDir, outDir):
     name = 'IRB_Stecker05'
@@ -55,9 +52,9 @@ def IRB_Gilmore12(fileDir, outDir):
     energy = []
     d = pd.DataFrame(d)
     for i in range(len(eps)):
-        fieldSlice = np.array(list(d[i])[1:]) * 4 * np.pi / (100 * c0) * wavelength[i] * erg  # eV/cm^3
+        fieldSlice = np.array(list(d[i])[1:]) * 4 * np.pi / (100 * crp.c_light) * wavelength[i] * crp.erg  # eV/cm^3
         fieldSlice /= eps[i]**2  # 1/eVcm^3
-        photonField.append(fieldSlice / eV)  # /eV?!
+        photonField.append(fieldSlice / crp.eV)  # /eV?!
         energy.append(eps[i])
     # invert, because lambda is antiprop to energy
     photonField = [x / (1 + redshift)**3 for x in reversed(photonField)]  # also make comoving
@@ -98,12 +95,12 @@ def IRB_Dominguez11(fileDir, outDir):
     redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
     filePath = fileDir + "EBL_Dominguez_2011/ebl_dominguez11.out"
     d = np.genfromtxt(filePath, unpack=False)
-    eps = [1.239842/fieldSlice[0]*eV for fieldSlice in d]  # [eV] | 1.238842 = h*c/1µ eV
+    eps = [1.239842/fieldSlice[0]*crp.eV for fieldSlice in d]  # [eV] | 1.238842 = h*c/1µ eV
     #                          nW->W : J->eV : 1/m^3->1/cm^3 : 1/sm^2sr->1/m^3
-    n = np.array([fieldSlice[1:] * 1e-9 * eV / 1e6 / eps[i]**2 * (4 * np.pi / c0) for i, fieldSlice in enumerate(d)])  # [1/eVcm^3] 
+    n = np.array([fieldSlice[1:] * 1e-9 * crp.eV / 1e6 / eps[i]**2 * (4 * np.pi / crp.c_light) for i, fieldSlice in enumerate(d)])  # [1/eVcm^3] 
     energy = []
     for i,x in enumerate(n):
-        energy.append(eps[i]/eV)
+        energy.append(eps[i]/crp.eV)
     photonField = [x for x in reversed(n)]
     energy = [e for e in reversed(energy)]
     createField(name, info, energy, redshift, photonField, outDir)
@@ -116,7 +113,7 @@ def IRB_Stecker16_lower(fileDir, outDir):
     filePath = fileDir + "EBL_Stecker_2016/comoving_enerdens_lo.csv"
     d = np.genfromtxt(filePath, delimiter=',')
     eps = 10**np.arange(-2.84, 1.14001, 0.01)  # [eV]
-    nu = eps * eV / h  # [Hz]
+    nu = eps * crp.eV / crp.c_light  # [Hz]
     photonField = []
     energy = []
     for i,dens in enumerate(d):
@@ -133,7 +130,7 @@ def IRB_Stecker16_upper(fileDir, outDir):
     filePath = fileDir + "EBL_Stecker_2016/comoving_enerdens_up.csv"
     d = np.genfromtxt(filePath, delimiter=',')
     eps = 10**np.arange(-2.84, 1.14001, 0.01)  # [eV]
-    nu = eps * eV / h  # [Hz]
+    nu = eps * crp.eV / crp.c_light  # [Hz]
     photonField = []
     energy = []
     for i,dens in enumerate(d):
@@ -195,13 +192,13 @@ def IRB_Franceschini08(fileDir, outDir):
 
 def CMB(outDir):
     name = "CMB"
-    info = "# Cosmic Microwave Background, T_CMB = 2.73 K"
+    info = "# Cosmic Microwave Background, T_CMB = 2.72548 K"
     redshift = None
-    eps = np.logspace(-10, -1, 101) * eV
-    T_CMB = 2.73
-    dnde = lambda e: 8 * np.pi / c0**3 / h**3 * e**2 / (np.exp(e/(kB*T_CMB)) - 1)
-    photonField = [[d * eV * cm3] for d in dnde(eps)]  # [1/eVcm^3]
-    energy = eps / eV  # [eV]
+    eps = np.logspace(-10, -1, 101) * crp.eV
+    T_CMB = 2.72548
+    dnde = lambda e: 8 * np.pi / crp.c_light**3 / crp.c_light**3 * e**2 / (np.exp(e/(crp.k_boltzmann*T_CMB)) - 1)
+    photonField = [[d * crp.eV * cm3] for d in dnde(eps)]  # [1/eVcm^3]
+    energy = eps / crp.eV  # [eV]
     createField(name, info, energy, redshift, photonField, outDir)
 
 
@@ -213,8 +210,8 @@ def URB_Protheroe96(outDir):
     logEmin = np.log10(PB.getEmin())
     logEmax = np.log10(PB.getEmax())
     eps = np.logspace(logEmin, logEmax, 101)
-    photonField = np.array([PB.getDensity(e) for e in eps]) / (cm3**-1  * eV**-1)
-    energy = eps / eV
+    photonField = np.array([PB.getDensity(e) for e in eps]) / (cm3**-1  * crp.eV**-1)
+    energy = eps / crp.eV
     createField(name, info, energy, redshift, photonField, outDir)
 
 
@@ -226,8 +223,8 @@ def URB_Fixsen11(outDir):
     logEmin = np.log10(FX.getEmin())
     logEmax = np.log10(FX.getEmax())
     eps = np.logspace(logEmin, logEmax, 101)
-    photonField = np.array([FX.getDensity(e) for e in eps]) / (cm3**-1 * eV**-1)
-    energy = eps / eV
+    photonField = np.array([FX.getDensity(e) for e in eps]) / (cm3**-1 * crp.eV**-1)
+    energy = eps / crp.eV
     createField(name, info, energy, redshift, photonField, outDir)
 
 
@@ -239,8 +236,8 @@ def URB_Nitu21(outDir):
     logEmin = np.log10(NT.getEmin())
     logEmax = np.log10(NT.getEmax())
     eps = np.logspace(logEmin, logEmax, 101)
-    photonField = np.array([NT.getDensity(e) for e in eps]) / (cm3**-1  * eV**-1)
-    energy = eps / eV
+    photonField = np.array([NT.getDensity(e) for e in eps]) / (cm3**-1  * crp.eV**-1)
+    energy = eps / crp.eV
     createField(name, info, energy, redshift, photonField, outDir)
 
 
@@ -256,7 +253,7 @@ def createField(name, info, energy, redshift, photonDensity, outDir):
         if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
         f.write("# photon energies in [J]\n")
         for e in energy:
-            f.write("{}\n".format(e * eV))  # [J]
+            f.write("{}\n".format(e * crp.eV))  # [J]
     if redshift is not None:
         with open(outDir + "/" + name + "_redshift.txt", 'w') as f:
             f.write(info+'\n')

@@ -4,7 +4,7 @@ import photonField
 import interactionRate as iR
 import gitHelp as gh
 
-eV = 1.60217657e-19
+from crpropa import eV
 
 def process(field):
     """ calculate the interaction rates for a given photon field"""

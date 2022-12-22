@@ -3,8 +3,8 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
+from crpropa import eV
 
-eV = 1.60217657e-19
 lgamma = np.linspace(6, 16, 251)  # tabulated Lorentz factors
 gamma = 10**lgamma
 

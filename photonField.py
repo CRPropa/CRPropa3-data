@@ -1,17 +1,12 @@
 import numpy as np
 from os import path
+from crpropa import eV, erg, c_light, h_planck, k_boltzmann, hertz
+
+T_CMB = 2.72548  # CMB temperature [K]
+
 
 cdir = path.split(__file__)[0]
 datadir = path.join(cdir, 'tables/')
-
-eV = 1.60217657e-19  # [J]
-erg = 1e-7  # [J]
-c0 = 299792458  # [m/s]
-h = 6.62606957e-34  # [m^2 kg / s]
-kB = 1.3806488e-23  # [m^2 kg / s^2 / K]
-Hz = 1. # [1 / s]
-T_CMB = 2.72548  # CMB temperature [K]
-
 
 # --------------------------------------------------------
 # interfaces
@@ -28,7 +23,7 @@ class CMB:
         Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J] and redshift z.
         Multiply with (1+z)^3 for the physical number density.
         """
-        return 8*np.pi / c0**3 / h**3 * eps**2 / np.expm1(eps / (kB * T_CMB)) 
+        return 8*np.pi / c_light**3 / h_planck**3 * eps**2 / np.expm1(eps / (k_boltzmann * T_CMB)) 
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
@@ -105,8 +100,8 @@ class EBL_Kneiske10(EBL):
             # y : lambda I_lambda [nW/m^2/sr]
             x, y = np.genfromtxt(self.files%z, unpack=True)
             wl = (10**x * 1e-6)  # wavelength in [m]
-            eps = h * c0 / wl
-            n = (10**y * 1e-9) * (4 * np.pi / c0) / eps**2
+            eps = h_planck * c_light / wl
+            n = (10**y * 1e-9) * (4 * np.pi / c_light) / eps**2
             self.data[z] = eps[::-1], n[::-1]
 
 class EBL_Dole06(EBL):
@@ -122,8 +117,8 @@ class EBL_Dole06(EBL):
         # d[0] : lambda [mu m]
         # d[1] : n(eps), [W/m^2/sr]
         d = np.genfromtxt(self.files, unpack=True)
-        eps = h * c0 / (d[0] * 1e-6)  # photon energy [J]
-        n = d[1] * (4 * np.pi / c0) / eps**2
+        eps = h_planck * c_light / (d[0] * 1e-6)  # photon energy [J]
+        n = d[1] * (4 * np.pi / c_light) / eps**2
         self.data[0] = eps[::-1], n[::-1]
 
 class EBL_Franceschini08(EBL):
@@ -195,8 +190,8 @@ class EBL_Gilmore12(EBL):
         # d[0] : rest frame wavelength in [angstrom]
         # d[1-21] : proper flux [erg/s/cm^2/ang/sr]
         d = np.genfromtxt(self.files, unpack=True)
-        eps = h * c0 / (d[0] * 1e-10)  # [J]
-        n = d[1:] * erg / 1e-4 * d[0] / eps**2 * (4 * np.pi / c0) 
+        eps = h_planck * c_light / (d[0] * 1e-10)  # [J]
+        n = d[1:] * erg / 1e-4 * d[0] / eps**2 * (4 * np.pi / c_light) 
         for i,z in enumerate(self.redshift):
             n[i] /= (1 + z)**3  # make comoving
             self.data[z] = eps[::-1], n[i][::-1]
@@ -230,8 +225,8 @@ class EBL_Dominguez11(EBL):
         # d[0] : rest frame wavelength in [mu m]
         # d[1-18] : proper flux [nW/m^2/sr]
         d = np.genfromtxt(datadir + fname, unpack=True)
-        eps = h * c0 / (d[0] * 1e-6)  # [J]
-        n = d[1:] * 1e-9 / eps**2 * (4 * np.pi / c0)
+        eps = h_planck * c_light / (d[0] * 1e-6)  # [J]
+        n = d[1:] * 1e-9 / eps**2 * (4 * np.pi / c_light)
         for i, z in enumerate(self.redshift):
             self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
 
@@ -263,7 +258,7 @@ class EBL_Stecker16(EBL):
         # units:   erg / Hz / cm^3 --> 
         d = np.genfromtxt(datadir + fname, delimiter=',').T
         eps = 10**np.arange(-2.84, 1.14001, 0.01) * eV
-        n = d * erg / h * 1E6 / eps
+        n = d * erg / h_planck * 1E6 / eps
         for i, z in enumerate(self.redshift):
             self.data[z] = eps, n[i]
 
@@ -297,10 +292,10 @@ class URB_Protheroe96:
         p7 = -7.12112e-01  # xbreak
 
         eps = np.r_[eps]
-        x = np.log10(eps / h / 1e9)
+        x = np.log10(eps / h_planck / 1e9)
         I = p0 + p1 * x + p2 * x**2 + p3 * x**3 / (np.exp(p4 * x) - 1)
         I[x > p7] += p6 + p5 * x[x > p7] - p2 * x[x > p7]**2
-        I = 4 * np.pi / (h * c0) * (10**I / eps)
+        I = 4 * np.pi / (h_planck * c_light) * (10**I / eps)
 
         I[eps < self.getEmin()] = 0
         I[eps > self.getEmax()] = 0
@@ -334,20 +329,20 @@ class URB_Fixsen11:
         Spectral number density dn/deps [1/m^3/J] at z = 0.
         """
         eps = np.r_[eps]
-        nu = eps / h
+        nu = eps / h_planck
         T = T_CMB + 24.1 * np.power(nu / 3.1e8, -2.6)
-        I = 8. * np.pi / c0 ** 3 / h ** 3 * eps ** 2 / (np.expm1(eps / (kB * T)))
+        I = 8. * np.pi / c_light ** 3 / h_planck ** 3 * eps ** 2 / (np.expm1(eps / (k_boltzmann * T)))
         I[eps < self.getEmin()] = 0.
         I[eps > self.getEmax()] = 0.
         return I
 
     def getEmin(self, z = 0.):
         """Minimum effective photon energy in [J]"""
-        return 2.2e6 * Hz * h
+        return 2.2e6 * hertz * h_planck
 
     def getEmax(self, z = 0.):
         """Maximum effective photon energy in [J]"""
-        return 1e10 * Hz * h
+        return 1e10 * hertz * h_planck
 
 class URB_Nitu21:
     """
@@ -379,12 +374,12 @@ class URB_Nitu21:
         p = [p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
 
         eps = np.r_[eps]
-        nu = eps / h
+        nu = eps / h_planck
         I = 0.
         for k in range(len(p)):
             I += (p[k] * np.power(np.log10(nu / 1e6), k))
         I = 10. ** I
-        I = 4 * np.pi / (h * c0) * (I / eps)
+        I = 4 * np.pi / (h_planck * c_light) * (I / eps)
 
         I[eps < self.getEmin()] = 0.
         I[eps > self.getEmax()] = 0.
@@ -393,11 +388,11 @@ class URB_Nitu21:
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
-        return 1e3 * Hz * h
+        return 1e3 * hertz * h_planck
 
     def getEmax(self, z=0):
         """Maximum effective photon energy in [J]"""
-        return 1e12 * Hz * h
+        return 1e12 * hertz * h_planck
 
 # --------------------------------------------------------
 #   main:   plot comparison of IRB models

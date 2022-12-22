@@ -4,9 +4,8 @@ import os
 import photonField
 import interactionRate
 import gitHelp as gh
+from crpropa import eV
 
-
-eV = 1.60217657e-19
 gamma = np.logspace(6, 14, 201)  # tabulated UHECR Lorentz-factors
 
 

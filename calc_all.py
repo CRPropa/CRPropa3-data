@@ -115,7 +115,7 @@ def photo_disintegration(rateFields: list, emissionFields: list):
 def photon_fields():
     """Photon field processing
     
-    This calls routines calculates, e.g., the redshift scaling files.
+    This calls routines to calculate, e.g., the redshift scaling files.
     """
 
     print("#"*50)
@@ -252,9 +252,7 @@ def createCRPropaDefault():
 
 
 if __name__ == "__main__":
-    #createCRPropaDefault()
-    fields = [photonField.CMB()]
-    createPhotonTargetInteractions(fields)
+    createCRPropaDefault()
 
     
     
