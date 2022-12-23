@@ -1,29 +1,83 @@
 import numpy as np
 from os import path
-from crpropa import eV, erg, c_light, h_planck, k_boltzmann, hertz
+from crpropa import eV, erg, c_light, h_planck, k_boltzmann, hertz, ccm
+import os
+import gitHelp as gh
+import pandas as pd
 
-T_CMB = 2.72548  # CMB temperature [K]
 
 
 cdir = path.split(__file__)[0]
 datadir = path.join(cdir, 'tables/')
 
+class PhotonField(object):
+    """Base class for photon fields"""
+
+    def __init__(self):
+        self.name = 'PhotonField'
+        self.info = 'Base class photon field'
+        self.energy = []
+        self.redshift = None
+        self.photonDensity = []
+        self.outdir = './testdata'
+
+    def createFiles(self):
+        try:
+            git_hash = gh.get_git_revision_hash()
+            addHash = True
+        except:
+            addHash = False
+
+        with open(self.outdir + "/" + self.name + "_photonEnergy.txt", 'w') as f:
+            f.write('# '+self.info+'\n')
+            if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+            f.write("# photon energies in [J]\n")
+            for e in self.energy:
+                f.write("{}\n".format(e * eV))  # [J]
+        if self.redshift is not None:
+            with open(self.outdir + "/" + self.name + "_redshift.txt", 'w') as f:
+                f.write('# '+self.info+'\n')
+                if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+                f.write("# redshift\n")
+                for z in self.redshift:
+                    f.write("{}\n".format(np.round(z, 2)))
+        with open(self.outdir + "/" + self.name + "_photonDensity.txt", 'w') as f:
+            f.write('# '+self.info+'\n')
+            if addHash: f.write("# Produced with crpropa-data version: "+git_hash+"\n")
+            f.write("# Comoving photon number density in [m^-3], format: d(e1,z1), ... , d(e1,zm), d(e2,z1), ... , d(e2,zm), ... , d(en,zm)\n")
+            for i, densSlice in enumerate(self.photonDensity):
+                #Including redshift evolution
+                try:
+                    for d in densSlice:
+                        f.write("{}\n".format(d * self.energy[i] / ccm))  # [# / m^3], comoving
+                #When no redshift is included the densSlice is a 1d array
+                except TypeError:
+                    print("I am in the exception (no redshift)")
+                    f.write("{}\n".format(densSlice * self.energy[i] / ccm))  # [# / m^3], comoving
+        print("done: " + self.name)
+
 # --------------------------------------------------------
 # interfaces
 # --------------------------------------------------------
-class CMB:
+class CMB(PhotonField):
     """
     Cosmic microwave background radiation
     """
-    name = 'CMB'
-    info = 'CMB'
-    redshift = None
+    
+    def __init__(self):
+        super(CMB, self).__init__()
+        self.name = 'CMB'
+        self.info = 'Cosmic Microwave Background, T_CMB = 2.72548 K'
+        self.T_CMB = 2.72548  # CMB temperature [K]
+        self.energy = np.logspace(-10, -1, 101) # [eV]
+        self.photonDensity = self.getDensity(self.energy * eV) * (eV * ccm) # [1/eVcm^3]
+
     def getDensity(self, eps, z=0):
         """
         Comoving spectral number density dn/deps [1/m^3/J] at given photon energy eps [J] and redshift z.
         Multiply with (1+z)^3 for the physical number density.
         """
-        return 8*np.pi / c_light**3 / h_planck**3 * eps**2 / np.expm1(eps / (k_boltzmann * T_CMB)) 
+        return 8*np.pi / c_light**3 / h_planck**3 * eps**2 / np.expm1(eps / (k_boltzmann * self.T_CMB)) 
 
     def getEmin(self, z=0):
         """Minimum effective photon energy in [J]"""
@@ -33,11 +87,13 @@ class CMB:
         """Maximum effective photon energy in [J]"""
         return 0.1 * eV
 
-class EBL:
+
+class EBL(PhotonField):
     """
     Base class for extragalactic background light (EBL) models
     """
     def __init__(self):
+        super(EBL, self).__init__()
         self.data = {}  # dictionary {redshift : (eps, dn/deps)}
 
     def getDensity(self, eps, z=0):
@@ -70,13 +126,16 @@ class EBL:
 class EBL_Kneiske04(EBL):
     """ IRB model from Kneiske 2004 """
 
-    name = 'IRB_Kneiske04'
-    info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
-    files = datadir + 'EBL_Kneiske_2004/all_z'
-    redshift = np.linspace(0, 5, 51)
-
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Kneiske04, self).__init__()
+        self.name = 'IRB_Kneiske04'
+        self.info = 'cosmic infrared and optical background radiation model of Kneiske et al. 2004'
+        self.files = datadir + 'EBL_Kneiske_2004/all_z'
+        self.redshift = np.linspace(0, 5, 51)
+
+        #TODO: Streamline the calls to open the file
+        #TODO: Make data, photonDensity, energy, getEnergy consistent
+        #NOTE: Calling createFiles() reproduces the files of calc_photonFields
         # d[0] : eps [eV]
         # d[1-51] : n(eps), [1/m^3/eV]
         d = np.genfromtxt(self.files, unpack=True)
@@ -85,16 +144,26 @@ class EBL_Kneiske04(EBL):
         for i,z in enumerate(self.redshift):
             self.data[z] = eps, n[i]
 
+        d = np.genfromtxt(self.files)
+        self.photonDensity = []
+        self.energy = []
+        for i,fieldSlice in enumerate(d):
+            for j,entry in enumerate(fieldSlice):
+                if j != 0:
+                    d[i][j] /= 1e6  # 1/eVm^3 -> 1/eVcm^3
+            self.photonDensity.append(fieldSlice[1:])
+            self.energy.append(fieldSlice[0])
+        
+
 class EBL_Kneiske10(EBL):
     """ IRB model from Kneiske 2010 """
 
-    name = 'IRB_Kneiske10'
-    info = 'cosmic infrared and optical background radiation lower limit model of Kneiske et al. 2010'
-    files = datadir + 'EBL_Kneiske_2010/%.1f'
-    redshift = (0, .1, .3, .8, 2)
-
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Kneiske10, self).__init__()
+        self.name = 'IRB_Kneiske10'
+        self.info = 'cosmic infrared and optical background radiation lower limit model of Kneiske et al. 2010'
+        self.files = datadir + 'EBL_Kneiske_2010/%.1f'
+        self.redshift = (0, .1, .3, .8, 2)
         for z in self.redshift:
             # x : wavelength in [mu m]
             # y : lambda I_lambda [nW/m^2/sr]
@@ -103,17 +172,23 @@ class EBL_Kneiske10(EBL):
             eps = h_planck * c_light / wl
             n = (10**y * 1e-9) * (4 * np.pi / c_light) / eps**2
             self.data[z] = eps[::-1], n[::-1]
+    
+    #TODO: Check if necessary information is available to create photonDensity and energy arrays
+    #NOTE: EBL_Kneiske10 was and is still *not* available in CRPropa. If this should be changed also 
+    #      CRPropa's PhotonBackground.h needs to be updated.
+    def createFiles(self):
+        print("WARNING "+self.__class__.__name__+": Not all relevant data available. No Files produced")
+        return
 
 class EBL_Dole06(EBL):
     """ IRB model from Dole 2006"""
 
-    name = 'IRB_Dole06'
-    info = 'cosmic infrared and optical background radiation model of Dole et al. 2006'
-    files = datadir + 'EBL_Dole_2006/0.0'
-    redshift = (0)
-
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Dole06, self).__init__()
+        self.name = 'IRB_Dole06'
+        self.info = 'cosmic infrared and optical background radiation model of Dole et al. 2006'
+        self.files = datadir + 'EBL_Dole_2006/0.0'
+        self.redshift = (0)
         # d[0] : lambda [mu m]
         # d[1] : n(eps), [W/m^2/sr]
         d = np.genfromtxt(self.files, unpack=True)
@@ -121,16 +196,27 @@ class EBL_Dole06(EBL):
         n = d[1] * (4 * np.pi / c_light) / eps**2
         self.data[0] = eps[::-1], n[::-1]
 
+    #TODO: Check if necessary information is available to create photonDensity and energy arrays
+    #NOTE: EBL_Kneiske10 was and is still *not* available in CRPropa. If this should be changed also 
+    #      CRPropa's PhotonBackground.h needs to be updated.
+    def createFiles(self):
+        print("WARNING "+self.__class__.__name__+": Not all relevant data available. No Files produced")
+        return
+
 class EBL_Franceschini08(EBL):
     """ IRB model from Fanceschini 2008 """
 
-    name = 'IRB_Franceschini08'
-    info = 'cosmic infrared and optical background radiation model of Franceschini et al. 2008'
-    files = datadir + 'EBL_Franceschini_2008/%1.1f'
-    redshift = (0, .2, .4, .6, .8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)
+    #TODO: Streamline the calls to open the file
+    #TODO: Make data, photonDensity, energy, getEnergy consistent
+    #NOTE: Calling createFiles() reproduces the files of calc_photonFields
 
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Franceschini08, self).__init__()
+        self.name = 'IRB_Franceschini08'
+        self.info = 'cosmic infrared and optical background radiation model of Franceschini et al. 2008'
+        self.files = datadir + 'EBL_Franceschini_2008/%1.1f'
+        self.fileDir = datadir + 'EBL_Franceschini_2008/'
+        self.redshift = np.linspace(0., 2., 11)
         for z in self.redshift:
             # x : log10(eps / eV)
             # y : eps * dn/deps [1/cm^3]
@@ -139,17 +225,50 @@ class EBL_Franceschini08(EBL):
             n = 10**y / eps * 1e6
             n /= (1 + z)**3  # make comoving
             self.data[z] = eps, n
+        self.loadData()
+        self.loadEnergy()
+        self.loadPhotonDensity()
+
+
+    def loadData(self):
+        """Load data from all redshift files into a single dictionary"""
+        fileList = os.listdir(self.fileDir)
+        self.fieldData = {}
+        # read in data. Note that there is a different energy range for each redshift!
+        for i, file in enumerate(sorted(fileList)):
+            if "README.txt" not in file:
+                data = np.genfromtxt(self.fileDir + file, unpack=True)
+                eps = data[0]  # [log10eV]
+                dens = data[1]  # [log10(eps*dn/deps in cm^-3)]
+                self.fieldData[np.round(self.redshift[i], 2)] = (eps, dens)
+
+    def loadEnergy(self):
+        """determine global min and max eps and then generate a logspace from them."""
+        epsMin, epsMax = [], []
+        for key in self.fieldData.keys():
+            epsMin.append(min(self.fieldData[key][0]))
+            epsMax.append(max(self.fieldData[key][0]))
+        self.energy = 10 ** np.linspace(min(epsMin), max(epsMax), 41)  # [eV]
+
+    def loadPhotonDensity(self):
+        """interpolate all redshift-dependent photon field densities on this range"""
+        photonField = []
+        for key in self.fieldData.keys():
+            dens = np.interp(self.energy, 10 ** self.fieldData[key][0], self.fieldData[key][1])
+            dens = 10 ** dens / self.energy  # log10(e*dn/de in 1/cm^3) -> 1/(eVcm^3)
+            photonField.append(dens)
+        photonField = np.swapaxes(np.array(photonField), 0, 1)
+        self.photonDensity = [zSlice / (1 + self.redshift)**3 for zSlice in photonField]  # make comoving
 
 class EBL_Stecker05(EBL):
     """ IRB model from Stecker 2005 """
 
-    name = 'IRB_Stecker05'
-    info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
-    files = datadir + 'EBL_Stecker_2005/data2.txt'
-    redshift = np.linspace(0, 5, 26)
-
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Stecker05, self).__init__()
+        self.name = 'IRB_Stecker05'
+        self.info = 'cosmic infrared and optical background radiation model of Stecker at al. 2005'
+        self.files = datadir + 'EBL_Stecker_2005/data2.txt'
+        self.redshift = np.linspace(0, 5, 26)
         # d[0]    : log10(eps/eV)
         # d[1-26] : log10(eps*n(eps)/cm^3), not comoving
         d = np.genfromtxt(self.files, unpack=True)
@@ -159,16 +278,29 @@ class EBL_Stecker05(EBL):
             # convert n(eps) to comoving density
             self.data[z] = eps, n[i] / (1+z)**3
 
+        data = d.transpose()
+        self.energy = []
+        self.photonDensity = []
+        for i, zSlice in enumerate(data):
+            eps = 10**zSlice[0]  # [eV]
+            self.energy.append(eps)
+            dens = 10**zSlice[1:] / eps  # [1/eVcm^3]
+            dens /= (self.redshift + 1)**3   # make comoving
+            self.photonDensity.append(dens)
+
 class EBL_Finke10(EBL):
     """ IRB model from Finke 2010"""
 
-    name = 'IRB_Finke10'
-    info = 'cosmic infrared and optical background radiation model of Finke et al. 2010 (Model C)'
-    files = datadir + 'EBL_Finke_2010/z%.2f.dat'
-    redshift = np.arange(0, 5, 0.01)
+    #TODO: Streamline the calls to open the file
+    #TODO: Make data, photonDensity, energy, getEnergy consistent
+    #NOTE: Calling createFiles() reproduces the files of calc_photonFields
 
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Finke10, self).__init__()
+        self.name = 'IRB_Finke10'
+        self.info = 'cosmic infrared and optical background radiation model of Finke et al. 2010 (Model C)'
+        self.files = datadir + 'EBL_Finke_2010/z%.2f.dat'
+        self.redshift = np.arange(0, 5, 0.01)
         for z in self.redshift:
             # d[0] : eps / eV
             # d[1] : comoving energy density in erg / cm^3
@@ -177,16 +309,37 @@ class EBL_Finke10(EBL):
             n   = d[1] * erg * 1e6 / eps**2 # [J/m^3]
             self.data[z] = eps, n
 
+        self.fileDir = datadir + "EBL_Finke_2010/"
+        self.fileList = os.listdir(self.fileDir)
+        d = pd.DataFrame()
+        col = 0
+        for file in sorted(self.fileList):
+            if "README.txt" not in file:
+                data = np.genfromtxt(self.fileDir + file, unpack=True)
+                eps = data[0]  # [eV] It's the same energy for all redshifts.
+                data = pd.DataFrame(data[1],columns=[col/100])
+                col += 1
+                d = pd.concat([d,data], join='outer', axis=1)
+        self.photonDensity = []
+        self.energy = []
+        for i,e in enumerate(eps):
+            #TODO: Check if the factor 6.2415091e11 is correct
+            #      1/eV * centimeter**3 = 6.2415091e12
+            #      Where does the additional factor 0.1 come from?
+            dens = np.array(list(d.iloc[i])) * 6.2415091e11 / e**2  # [1/eVcm^3]
+            self.photonDensity.append(dens)
+            self.energy.append(e)
+
 class EBL_Gilmore12(EBL):
     """ IRB model from Gilmore 2012 """
 
-    name = 'IRB_Gilmore12'
-    info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (Evolving dust model, arXiv:1104.0671)'
-    files = datadir + 'EBL_Gilmore_2012/eblflux_fiducial.dat'
-    redshift = np.array([0, 0.015, 0.025, 0.044, 0.05, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0])
-
     def __init__(self):
-        EBL.__init__(self)
+        super(EBL_Gilmore12, self).__init__()
+        self.name = 'IRB_Gilmore12'
+        self.info = 'cosmic infrared and optical background radiation model of Gilmore et al. 2012 (Evolving dust model, arXiv:1104.0671)'
+        self.files = datadir + 'EBL_Gilmore_2012/eblflux_fiducial.dat'
+        self.redshift = np.array([0, 0.015, 0.025, 0.044, 0.05, 0.2, 0.4, 0.5, 0.6,\
+                                 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0])
         # d[0] : rest frame wavelength in [angstrom]
         # d[1-21] : proper flux [erg/s/cm^2/ang/sr]
         d = np.genfromtxt(self.files, unpack=True)
@@ -195,6 +348,20 @@ class EBL_Gilmore12(EBL):
         for i,z in enumerate(self.redshift):
             n[i] /= (1 + z)**3  # make comoving
             self.data[z] = eps[::-1], n[i][::-1]
+
+        wavelength = d[0]  # angstrom
+        eps = 12.39842e3 / wavelength  # [eV]
+        self.photonDensity = []
+        self.energy = []
+        d = pd.DataFrame(d)
+        for i in range(len(eps)):
+            fieldSlice = np.array(list(d[i])[1:]) * 4 * np.pi / (100 * c_light) * wavelength[i] * erg  # eV/cm^3
+            fieldSlice /= eps[i]**2  # 1/eVcm^3
+            self.photonDensity.append(fieldSlice / eV)  # /eV?!
+            self.energy.append(eps[i])
+        # invert, because lambda is antiprop to energy
+        self.photonDensity = [x / (1 + self.redshift)**3 for x in reversed(self.photonDensity)]  # also make comoving
+        self.energy = [e for e in reversed(self.energy)]
 
 class EBL_Dominguez11(EBL):
     """ IRB model from Dominguez 2011 """
