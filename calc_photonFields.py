@@ -19,8 +19,6 @@ import gitHelp as gh
 import photonField as pf
 import crpropa as crp
 
-
-#eV = 1.60217657e-19  # [J]
 cm3 = crp.centimeter**3 # [m^3]
 
 def IRB_Stecker05(fileDir, outDir):
@@ -196,7 +194,7 @@ def CMB(outDir):
     redshift = None
     eps = np.logspace(-10, -1, 101) * crp.eV
     T_CMB = 2.72548
-    dnde = lambda e: 8 * np.pi / crp.c_light**3 / crp.c_light**3 * e**2 / (np.exp(e/(crp.k_boltzmann*T_CMB)) - 1)
+    dnde = lambda e: 8 * np.pi / crp.c_light**3 / crp.h_planck**3 * e**2 / (np.exp(e/(crp.k_boltzmann*T_CMB)) - 1)
     photonField = [[d * crp.eV * cm3] for d in dnde(eps)]  # [1/eVcm^3]
     energy = eps / crp.eV  # [eV]
     createField(name, info, energy, redshift, photonField, outDir)
