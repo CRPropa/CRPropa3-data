@@ -364,7 +364,10 @@ class EBL_Gilmore12(EBL):
         self.energy = [e for e in reversed(self.energy)]
 
 class EBL_Dominguez11(EBL):
-    """ IRB model from Dominguez 2011 """
+    """ IRB model from Dominguez 2011 
+    
+    EBL intensities from the paper "Extragalactic background light inferred from AEGIS galaxy-SED-type fractions", A. Dominguez et al., 2011, MNRAS, 410, 2556
+    """
 
     def __init__(self, which='best'):
         """ Constructor
@@ -372,7 +375,7 @@ class EBL_Dominguez11(EBL):
         Input:
           which : \"best\" for the best fit model, \"upper\" or \"lower\" for the upper/lower uncertaincy.
         """
-        EBL.__init__(self)
+        super(EBL_Dominguez11, self).__init__()
     
         if which == 'best':
             fname = 'EBL_Dominguez_2011/ebl_dominguez11.out'
@@ -386,7 +389,7 @@ class EBL_Dominguez11(EBL):
         else:
             raise ValueError('EBL_Dominguez11 only provides "best", "upper" and "lower" models')
 
-        self.info = 'cosmic infrared and optical background radiation (%s) model of Dominguez et al. 2011 (arXiv:1007.1459)' % which
+        self.info = 'cosmic infrared and optical background radiation ({}) model of Dominguez et al. 2011 (arXiv:1007.1459)'.format(which)
         self.redshift = np.array([0, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.9])
 
         # d[0] : rest frame wavelength in [mu m]
@@ -396,6 +399,16 @@ class EBL_Dominguez11(EBL):
         n = d[1:] * 1e-9 / eps**2 * (4 * np.pi / c_light)
         for i, z in enumerate(self.redshift):
             self.data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
+
+        d = np.genfromtxt(datadir + fname, unpack=False)
+        eps = [h_planck*c_light / (eV * ccm) / fieldSlice[0]*eV for fieldSlice in d]  # [eV] | 1.238842 = h*c/1µ eV
+        #                          nW->W : J->eV : 1/m^3->1/cm^3 : 1/sm^2sr->1/m^3
+        n = np.array([fieldSlice[1:] * 1e-9 * eV / 1e6 / eps[i]**2 * (4 * np.pi / c_light) for i, fieldSlice in enumerate(d)])  # [1/eVcm^3] 
+        energy = []
+        for i,x in enumerate(n):
+            energy.append(eps[i]/eV)
+        self.photonDensity = [x for x in reversed(n)]
+        self.energy = [e for e in reversed(energy)]
 
 class EBL_Stecker16(EBL):
     """ IRB model from Stecker 2016 """
@@ -407,7 +420,7 @@ class EBL_Stecker16(EBL):
         Input
           which : \"upper\" or \"lower\" for an estimation of the uncertaincy
         """
-        EBL.__init__(self)
+        super(EBL_Stecker16, self).__init__()
 
         if which == 'upper':
             fname = 'EBL_Stecker_2016/comoving_enerdens_up.csv'
@@ -429,10 +442,20 @@ class EBL_Stecker16(EBL):
         for i, z in enumerate(self.redshift):
             self.data[z] = eps, n[i]
 
+        d_t = d.T
+        eps_eV = eps / eV # [eV]
+        nu = eps / c_light  # [Hz]
+        self.photonDensity = []
+        self.energy = []
+        for i, dens in enumerate(d_t):
+            dens = dens * 6.2415091e11 * nu[i] / eps_eV[i]**2  # 1/eVcm^3
+            self.photonDensity.append(dens)
+            self.energy.append(eps_eV[i])
+
 # --------------------------------------------------------
 # CRB (radio) models
 # --------------------------------------------------------
-class URB_Protheroe96:
+class URB_Protheroe96(PhotonField):
     """
     Universal Radio Background from Protheroe & Bierman 1996.
     Taken from EleCa implementation.
@@ -441,9 +464,19 @@ class URB_Protheroe96:
     R. J. Protheroe and P. L. Biermann
     Astroparticle Physics 6 (1996) 45.
     """
-    name = "URB_Protheroe96"
-    info = "URB_Protheroe96"
-    redshift = None
+
+    def __init__(self):
+
+        super(URB_Protheroe96, self).__init__()
+        self.name = "URB_Protheroe96"
+        self.info = "Universal Radio Background from Protheroe & Bierman Astroparticle Physics 6 (1996) 45."
+        self.redshift = None
+
+        logEmin = np.log10(self.getEmin())
+        logEmax = np.log10(self.getEmax())
+        eps = np.logspace(logEmin, logEmax, 101)
+        self.photonDensity = np.array([self.getDensity(e) for e in eps]) / (ccm**-1  * eV**-1)
+        self.energy = eps / eV
 
     def getDensity(self, eps, z=0):
         """
@@ -476,7 +509,7 @@ class URB_Protheroe96:
         """Maximum effective photon energy in [J]"""
         return 2E-6 * eV # 0.825e-6 * eV
 
-class URB_Fixsen11:
+class URB_Fixsen11(PhotonField):
     """
     Universal Radio Background as measured by ARCADE2.
     Note that the frequency range in this reference is more narrow than for other models.
@@ -487,9 +520,19 @@ class URB_Fixsen11:
       The Astrophysical Journal 734 (2011) 5.
       https://arxiv.org/abs/0901.0555
     """
-    name = 'URB_Fixsen11'
-    info = 'URB_Fixsen11'
-    redshift = None
+
+    def __init__(self):
+        super(URB_Fixsen11, self).__init__()
+        self.name = 'URB_Fixsen11'
+        self.info = 'Universal Radio Background as measured by ARCADE2 D. J. Fixsen et al. ApJ 734 (2011) 5'
+        self.redshift = None
+        self.T_CMB = 2.72548
+
+        logEmin = np.log10(self.getEmin())
+        logEmax = np.log10(self.getEmax())
+        eps = np.logspace(logEmin, logEmax, 101)
+        self.photonDensity = np.array([self.getDensity(e) for e in eps]) / (ccm**-1 * eV**-1)
+        self.energy = eps / eV
 
     def getDensity(self, eps, z = 0.):
         """
@@ -497,7 +540,7 @@ class URB_Fixsen11:
         """
         eps = np.r_[eps]
         nu = eps / h_planck
-        T = T_CMB + 24.1 * np.power(nu / 3.1e8, -2.6)
+        T = self.T_CMB + 24.1 * np.power(nu / 3.1e8, -2.6)
         I = 8. * np.pi / c_light ** 3 / h_planck ** 3 * eps ** 2 / (np.expm1(eps / (k_boltzmann * T)))
         I[eps < self.getEmin()] = 0.
         I[eps > self.getEmax()] = 0.
@@ -511,7 +554,7 @@ class URB_Fixsen11:
         """Maximum effective photon energy in [J]"""
         return 1e10 * hertz * h_planck
 
-class URB_Nitu21:
+class URB_Nitu21(PhotonField):
     """
     Universal Radio Background from Nitu et al. 2021.
     Reference:
@@ -519,9 +562,18 @@ class URB_Nitu21:
       Astroparticle Physics 126 (2021) 102532.
       https://arxiv.org/abs/2004.13596
     """
-    name = 'URB_Nitu21'
-    info = 'URB_Nitu21'
-    redshift = None
+
+    def __init__(self):
+        super(URB_Nitu21, self).__init__()
+        self.name = 'URB_Nitu21'
+        self.info = 'Universal Radio Background from Nitu et al. Astropart. Phys. 126 (2021) 102532'
+        self.redshift = None
+
+        logEmin = np.log10(self.getEmin())
+        logEmax = np.log10(self.getEmax())
+        eps = np.logspace(logEmin, logEmax, 101)
+        self.photonDensity = np.array([self.getDensity(e) for e in eps]) / (ccm**-1  * eV**-1)
+        self.energy = eps / eV
 
     def getDensity(self, eps, z=0):
         """
