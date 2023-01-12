@@ -19,7 +19,7 @@ class PhotonField(object):
         self.energy = []
         self.redshift = None
         self.photonDensity = []
-        self.outdir = './testdata'
+        self.outdir = './data'
 
     def createFiles(self):
         try:

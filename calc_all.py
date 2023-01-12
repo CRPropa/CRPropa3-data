@@ -7,7 +7,6 @@ import calc_pairproduction as bh
 import calc_photodisintegration as pdi
 import calc_photopionproduction as ppp
 import calc_synchrotron as syn
-import calc_photonFields as cpf
 
 def nuclear_decay():
     """Creates nuclear decay tables"""
@@ -37,7 +36,6 @@ def elastic_scattering(fields: list):
     print("\nElastic scattering tables generated in {} seconds.".format(round(t2-t1, 2)))
     print("#"*50+"\n")
 
-
 def EM_processes(fields: list):
     """Calculate electromagnetic processes
     
@@ -59,7 +57,7 @@ def EM_processes(fields: list):
         em.process(em.sigmaTPP, field, 'EMTripletPairProduction')
         em.process(em.sigmaICS, field, 'EMInverseComptonScattering')
     t2 = time.time()
-    print("\Electromagnetic processes generated in {} seconds.".format(round(t2-t1, 2)))
+    print("\nElectromagnetic processes generated in {} seconds.".format(round(t2-t1, 2)))
     print("#"*50+"\n") 
 
 def nuclear_mass():
@@ -111,17 +109,21 @@ def photo_disintegration(rateFields: list, emissionFields: list):
     print("\nPhoto disintegration tables generated in {} seconds.".format(round(t2-t1, 2)))
     print("#"*50+"\n")
 
-#TODO That needs to be updated to work with arbitrary photon field classes.
-def photon_fields():
+def photon_fields(fields: list):
     """Photon field processing
     
     This calls routines to calculate, e.g., the redshift scaling files.
+
+    Input
+        fields: list of CRPropa photonField class instances
     """
 
     print("#"*50)
     print("Process Photon fields\n")
     t1 = time.time()
-    cpf.process()
+    for field in fields:
+        print(field.name)
+        field.createFiles()
     t2 = time.time()
     print("\nPhotonfield data generated in {} seconds.".format(round(t2-t1, 2)))
     print("#"*50+"\n")
@@ -199,8 +201,7 @@ def createPhotonTargetInteractions(fields: list):
     BH_pair_production(fields)
     photo_disintegration(fields, fields)
     photopion_production(fields)
-
-    #TODO: Include the creation of the scaling files
+    photon_fields(fields)
 
 def createCRPropaDefault():
     """Creating and compressing all default files 
@@ -244,7 +245,7 @@ def createCRPropaDefault():
     EM_processes(fields_cmbebl+fields_urb)
     BH_pair_production(fields_cmbebl)
     photo_disintegration(fields_cmbebl+fields_urb, reduced_fields)
-    photon_fields()
+    photon_fields(fields_cmbebl+fields_urb)
     photopion_production(fields_cmbebl+fields_urb)
     synchrotron()
     compress()
@@ -253,15 +254,3 @@ def createCRPropaDefault():
 
 if __name__ == "__main__":
     createCRPropaDefault()
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
