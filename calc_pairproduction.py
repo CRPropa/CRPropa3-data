@@ -12,9 +12,9 @@ import gitHelp as gh
 
 from crpropa import Mpc, c_squared, mass_electron, mass_proton, radius_electron, alpha_finestructure
 
-me_c2 = mass_electron * c_squared  # electron mass in [J/c^2]
-mp = 1.67262178e-27  # proton mass [kg]
+cdir = os.path.split(__file__)[0]
 
+me_c2 = mass_electron * c_squared  # electron mass in [J/c^2]
 
 def lossRate(gamma, field, z=0):
     """
@@ -98,8 +98,11 @@ def reformat_secondary_rates():
     This should be reimplemented for extension to the other backgrounds,
     cross-checking and documentation.
     """
-    d1 = np.genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
-    d2 = np.genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
+    dfile1 = os.path.join(cdir, 'tables/EPP/pair_spectrum_cmb.table')
+    d1 = np.genfromtxt(dfile1, unpack=True)
+
+    dfile2 = os.path.join(cdir, 'tables/EPP/pair_spectrum_cmbir.table')
+    d2 = np.genfromtxt(dfile2, unpack=True)
 
     # amplitudes dN/dEe(Ep)
     A1 = d1[2].reshape((70, 170))  # CMB

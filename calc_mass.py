@@ -3,6 +3,8 @@ import crpropa
 import gitHelp as gh
 import os
 
+cdir = os.path.split(__file__)[0]
+
 # This script generates a table of nuclear mass for all combinations (Z,N) Z=0..26, N=0..30
 # For measured atoms, the NIST data table is used.
 # All other atomic masses are taken to be A * amu
@@ -13,7 +15,8 @@ import os
 # See: http://www.nist.gov/pml/data/comp.cfm
 # All Isotopes, Linearized ASCII Output
 # http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&ascii=ascii2&isotype=all
-fin = open('tables/mass_NIST.txt', 'r')
+datapath = os.path.join(cdir, 'tables/mass_NIST.txt')
+fin = open(datapath, 'r')
 D = zeros((27, 31))
 
 for i in range(4):

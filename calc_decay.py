@@ -4,6 +4,8 @@ from scipy.integrate import quad
 import gitHelp as gh
 import os
 
+cdir = os.path.split(__file__)[0]
+
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
 # Decay Radiation Search: gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp --> gamma_NuDat2.txt
@@ -76,7 +78,9 @@ class GammaEmission:
 ### parse gamma emission data file
 print ('\nParsing gamma emission data file')
 print ('-------------------------------------')
-data = open('tables/gamma_NuDat2.txt')
+
+datapath = os.path.join(cdir, 'tables/gamma_NuDat2.txt')
+data = open(datapath)
 lines = data.readlines()[1:-3] # skip header and footer
 data.close()
 
@@ -147,7 +151,8 @@ print (g1, ' <- set photon emission probability to 100%\n')
 ### parse decay data file
 print ('\nParsing decay data file')
 print ('-------------------------------------')
-fin = open('tables/decay_NuDat2.txt')
+datapath = os.path.join(cdir, 'tables/decay_NuDat2.txt')
+fin = open(datapath)
 lines = fin.readlines()
 fin.close()
 

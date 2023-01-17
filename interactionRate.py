@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import cumulative_trapezoid, romb, quad
 import os
 from crpropa import eV, Mpc
-
+import gitHelp as gh
 
 
 def calc_rate_eps(eps, xs, gamma, field, z=0, cdf=False):

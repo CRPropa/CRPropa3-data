@@ -5,6 +5,8 @@ import os
 import gitHelp as gh
 from crpropa import eV
 
+cdir = os.path.split(__file__)[0]
+
 lgamma = np.linspace(6, 16, 251)  # tabulated Lorentz factors
 gamma = 10**lgamma
 
@@ -12,11 +14,13 @@ gamma = 10**lgamma
 # Load proton / neutron cross sections [1/m^2] for tabulated energies [J]
 # truncate to largest length 2^i + 1 for Romberg integration
 # ----------------------------------------------------
-d = np.genfromtxt('tables/PPP/xs_proton.txt', unpack=True)
+ddir1 = os.path.join(cdir, 'tables/PPP/xs_proton.txt')
+d = np.genfromtxt(ddir1, unpack=True)
 eps1 = d[0, :2049] * 1e9 * eV  # [J]
 xs1 = d[1, :2049] * 1e-34  # [m^2]
 
-d = np.genfromtxt('tables/PPP/xs_neutron.txt', unpack=True)
+ddir2 = os.path.join(cdir, 'tables/PPP/xs_neutron.txt')
+d = np.genfromtxt(ddir2, unpack=True)
 eps2 = d[0, :2049] * 1e9 * eV  # [J]
 xs2 = d[1, :2049] * 1e-34  # [m^2]
 

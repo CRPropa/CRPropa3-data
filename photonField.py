@@ -1,14 +1,11 @@
 import numpy as np
-from os import path
 from crpropa import eV, erg, c_light, h_planck, k_boltzmann, hertz, ccm
 import os
 import gitHelp as gh
 import pandas as pd
 
-
-
-cdir = path.split(__file__)[0]
-datadir = path.join(cdir, 'tables/')
+cdir = os.path.split(__file__)[0]
+datadir = os.path.join(cdir, 'tables/')
 
 class PhotonField(object):
     """Base class for photon fields"""
@@ -19,7 +16,7 @@ class PhotonField(object):
         self.energy = []
         self.redshift = None
         self.photonDensity = []
-        self.outdir = './data'
+        self.outdir = 'data/Scaling'
 
     def createFiles(self):
         try:
@@ -27,6 +24,9 @@ class PhotonField(object):
             addHash = True
         except:
             addHash = False
+
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
 
         with open(self.outdir + "/" + self.name + "_photonEnergy.txt", 'w') as f:
             f.write('# '+self.info+'\n')
@@ -52,7 +52,6 @@ class PhotonField(object):
                         f.write("{}\n".format(d * self.energy[i] / ccm))  # [# / m^3], comoving
                 #When no redshift is included the densSlice is a 1d array
                 except TypeError:
-                    print("I am in the exception (no redshift)")
                     f.write("{}\n".format(densSlice * self.energy[i] / ccm))  # [# / m^3], comoving
         print("done: " + self.name)
 

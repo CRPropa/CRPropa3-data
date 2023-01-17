@@ -6,13 +6,15 @@ import interactionRate
 import gitHelp as gh
 from crpropa import eV
 
+cdir = os.path.split(__file__)[0]
+
 gamma = np.logspace(6, 14, 201)  # tabulated UHECR Lorentz-factors
 
 
 # ----------------------------------------------------
 # Load cross sections for A < 12
 # ----------------------------------------------------
-ddir1 = 'tables/PD_external/'
+ddir1 = os.path.join(cdir, 'tables/PD_external/')
 isotopes1 = np.genfromtxt(ddir1 + 'isotopes.txt')
 eps = np.genfromtxt(ddir1 + 'eps.txt')
 d1sum = np.genfromtxt(ddir1 + 'xs_sum.txt', dtype=[('Z', int), ('N', int), ('xs', '%if8' % len(eps))])
@@ -26,7 +28,7 @@ xs1exc = np.array([interactionRate.romb_pad_zero(x, 513) for x in d1exc['xs']]) 
 # ----------------------------------------------------
 # Load cross sections for A >= 12 (TALYS)
 # ----------------------------------------------------
-ddir2 = 'tables/PD_Talys1.8_Khan/'
+ddir2 = os.path.join(cdir, 'tables/PD_Talys1.8_Khan/')
 isotopes2 = np.genfromtxt(ddir2 + 'isotopes.txt')
 eps = np.genfromtxt(ddir2 + 'eps.txt')
 d2sum = np.genfromtxt(ddir2 + 'xs_pd_sum.txt', dtype=[('Z', int), ('N', int), ('xs', '%if8' % len(eps))])

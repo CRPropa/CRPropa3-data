@@ -6,6 +6,8 @@ import gitHelp as gh
 
 from crpropa import eV
 
+cdir = os.path.split(__file__)[0]
+
 def process(field):
     """ calculate the interaction rates for a given photon field"""
 
@@ -17,7 +19,7 @@ def process(field):
     gamma = np.logspace(6, 14, 201)  # tabulated UHECR Lorentz-factors
 
     # load cross section data from TALYS
-    ddir = 'tables/PD_Talys1.8_Khan/'
+    ddir = os.path.join(cdir, 'tables/PD_Talys1.8_Khan/')
     eps = np.genfromtxt(ddir + 'eps_elastic.txt') * eV * 1e6  # nuclear rest frame photon energies [J]
     data = np.genfromtxt(ddir + 'xs_elastic.txt', dtype=[('Z', int), ('N', int), ('xs', '%if8' % len(eps))])
 
