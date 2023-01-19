@@ -3,7 +3,7 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
-from crpropa import eV
+from units import eV
 
 cdir = os.path.split(__file__)[0]
 

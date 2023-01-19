@@ -4,12 +4,9 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
-from crpropa import eV, mass_electron, c_light
+from units import eV, mass_electron, c_light, sigma_thomson, alpha_finestructure
 
 me2 = (mass_electron*c_light**2.) ** 2  # squared electron mass [J^2/c^4]
-sigmaThomson = 6.6524e-29  # Thomson cross section [m^2]
-alpha = 1 / 137.035999074  # fine structure constant
-
 
 def sigmaPP(s):
     """ Pair production cross section (Breit-Wheeler), see Lee 1996 """
@@ -18,7 +15,7 @@ def sigmaPP(s):
         return 0.
 
     b = np.sqrt(1 - smin / s)
-    return sigmaThomson * 3 / 16 * (1 - b**2) * ((3 - b**4) * (np.log1p(b) - np.log1p(-b)) - 2 * b * (2 - b**2))
+    return sigma_thomson * 3 / 16 * (1 - b**2) * ((3 - b**4) * (np.log1p(b) - np.log1p(-b)) - 2 * b * (2 - b**2))
 
 
 def sigmaDPP(s):
@@ -40,7 +37,7 @@ def sigmaICS(s):
     b = (s - smin) / (s + smin)
     A = 2 / b / (1 + b) * (2 + 2 * b - b**2 - 2 * b**3)
     B = (2 - 3 * b**2 - b**3) / b**2 * (np.log1p(b) - np.log1p(-b))
-    return sigmaThomson * 3 / 8 * smin / s / b * (A - B)
+    return sigma_thomson * 3 / 8 * smin / s / b * (A - B)
 
 
 def sigmaTPP(s):
@@ -49,7 +46,7 @@ def sigmaTPP(s):
     if beta < 0:
         return 0
     
-    return sigmaThomson * 3 / 8 / np.pi * alpha * beta
+    return sigma_thomson * 3 / 8 / np.pi * alpha * beta
 
 
 def getTabulatedXS(sigma, skin):

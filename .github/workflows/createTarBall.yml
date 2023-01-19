@@ -15,9 +15,17 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Create and Upload a file containing the current date to SCIEBO
+    # Checkout the repository
     - name: Checkout repository
-      uses: actions/checkout@v3  
+      uses: actions/checkout@v3
+    # Preinstall and caching of python modules
+    - name: Preinstall
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+      run: pip install numpy scipy
+    # Creating the default CRPropa data, compressing and calculating the checksum  
     - name: Create tabulated data
       run: |
         python calc_all.py
