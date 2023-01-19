@@ -1,4 +1,3 @@
-from genericpath import isdir
 import numpy as np
 import os
 import photonField
