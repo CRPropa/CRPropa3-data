@@ -1,4 +1,4 @@
-from pylab import *
+import numpy as np
 import gitHelp as gh
 import os
 
@@ -18,7 +18,7 @@ cdir = os.path.split(__file__)[0]
 # http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&ascii=ascii2&isotype=all
 datapath = os.path.join(cdir, 'tables/mass_NIST.txt')
 fin = open(datapath, 'r')
-D = zeros((27, 31))
+D = np.zeros((27, 31))
 
 for i in range(4):
     fin.readline() # skip header
