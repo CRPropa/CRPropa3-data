@@ -46,7 +46,7 @@ def sigmaTPP(s):
     if beta < 0:
         return 0
     
-    return sigma_thomson * 3 / 8 / np.pi * alpha * beta
+    return sigma_thomson * 3 / 8 / np.pi * alpha_finestructure * beta
 
 
 def getTabulatedXS(sigma, skin):
