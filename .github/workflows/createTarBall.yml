@@ -25,7 +25,7 @@ jobs:
         python-version: '3.9'
         cache: 'pip' # caching pip dependencies
     - name: pip install
-      run: pip install numpy scipy
+      run: pip install -r requirements.txt
     # Creating the default CRPropa data, compressing and calculating the checksum  
     - name: Create tabulated data
       run: |
