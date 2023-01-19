@@ -239,8 +239,8 @@ def createCRPropaDefault():
         photonField.URB_Nitu21()
     ]
 
-    nuclear_decay()
     nuclear_mass()
+    nuclear_decay()
     elastic_scattering(reduced_fields)
     EM_processes(fields_cmbebl+fields_urb)
     BH_pair_production(fields_cmbebl)
