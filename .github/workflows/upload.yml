@@ -94,6 +94,6 @@ jobs:
         curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz-CHECKSUM" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz-CHECKSUM"
       env:
           # Login credentials are stored as encrypted secrets in the repository settings on github.
-          SCIEBO_USR: ${{ secrets.SCIEBO_LOGIN }}
-          SCIEBO_PWD: ${{ secrets.SCIEBO_PASSWORD}}
+          SCIEBO_USR: ${{ secrets.SCIEBO_CRPDATA_USR }}
+          SCIEBO_PWD: ${{ secrets.SCIEBO_CRPDATA_PWD}}
           
