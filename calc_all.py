@@ -218,7 +218,8 @@ def calc_checksum():
     print("#"*50)
     print("Calculating the checksum.")
     t1 = time.time()
-    datestr = "-".join([str(x) for x in time.localtime()[:3]])
+    # datestr format YYYY-MM-DD
+    datestr = "-".join([str(x).zfill(2) for x in time.localtime()[:3]])
     checksum = subprocess.run(["md5sum", "data-"+datestr+".tar.gz"],
                     capture_output=True, text=True).stdout
     with open("data-"+datestr+".tar.gz-CHECKSUM", 'w') as f:

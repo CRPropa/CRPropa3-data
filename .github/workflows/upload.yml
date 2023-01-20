@@ -1,6 +1,6 @@
 # Workflow to test automatic uploading to Sciebo
 
-name: Upload Testfile 
+name: Upload data 
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
