@@ -3,16 +3,17 @@ import os
 import photonField
 import interactionRate
 import gitHelp as gh
+from units import eV
 
+cdir = os.path.split(__file__)[0]
 
-eV = 1.60217657e-19
 gamma = np.logspace(6, 14, 201)  # tabulated UHECR Lorentz-factors
 
 
 # ----------------------------------------------------
 # Load cross sections for A < 12
 # ----------------------------------------------------
-ddir1 = 'tables/PD_external/'
+ddir1 = os.path.join(cdir, 'tables/PD_external/')
 isotopes1 = np.genfromtxt(ddir1 + 'isotopes.txt')
 eps = np.genfromtxt(ddir1 + 'eps.txt')
 d1sum = np.genfromtxt(ddir1 + 'xs_sum.txt', dtype=[('Z', int), ('N', int), ('xs', '%if8' % len(eps))])
@@ -26,7 +27,7 @@ xs1exc = np.array([interactionRate.romb_pad_zero(x, 513) for x in d1exc['xs']]) 
 # ----------------------------------------------------
 # Load cross sections for A >= 12 (TALYS)
 # ----------------------------------------------------
-ddir2 = 'tables/PD_Talys1.8_Khan/'
+ddir2 = os.path.join(cdir, 'tables/PD_Talys1.8_Khan/')
 isotopes2 = np.genfromtxt(ddir2 + 'isotopes.txt')
 eps = np.genfromtxt(ddir2 + 'eps.txt')
 d2sum = np.genfromtxt(ddir2 + 'xs_pd_sum.txt', dtype=[('Z', int), ('N', int), ('xs', '%if8' % len(eps))])
@@ -54,23 +55,7 @@ xs3exc = np.array([interactionRate.romb_pad_zero(x, 513) for x in d3exc['xs']]) 
 # ----------------------------------------------------
 # Calculate interaction rates and branching ratios
 # ----------------------------------------------------
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12(),
-    photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower'),
-    photonField.URB_Protheroe96(),
-    photonField.URB_Fixsen11(),
-    photonField.URB_Nitu21()
-    ]
-
-for field in fields:
-    print(field.name)
+def processRate(field):
 
     # output folder
     folder = 'data/Photodisintegration'
@@ -121,18 +106,36 @@ for field in fields:
         fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
         header=header)
 
+if __name__ == "__main__":
+    fields = [
+        photonField.CMB(),
+        photonField.EBL_Kneiske04(),
+        photonField.EBL_Stecker05(),
+        photonField.EBL_Franceschini08(),
+        photonField.EBL_Finke10(),
+        photonField.EBL_Dominguez11(),
+        photonField.EBL_Gilmore12(),
+        photonField.EBL_Stecker16('upper'),
+        photonField.EBL_Stecker16('lower'),
+        photonField.URB_Protheroe96(),
+        photonField.URB_Fixsen11(),
+        photonField.URB_Nitu21()
+        ]
+    
+    for field in fields:
+        processRate(field)
+
+
 
 # ----------------------------------------------------
 # Calculate photon emission probabilities
 # ----------------------------------------------------
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Gilmore12(),
-    photonField.URB_Protheroe96()
-    ]
+def processEmission(field):
+    """ calculate photon emission probabilities """
 
-for field in fields:
-    print(field.name)
+    folder = "data/Photodisintegration/"
+    if not os.path.isdir:
+        os.makedirs(folder)
 
     R3 = np.array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3sum])
     B3 = np.array([interactionRate.calc_rate_eps(eps3, x, gamma, field) for x in xs3exc])
@@ -149,8 +152,24 @@ for field in fields:
     except:
         header = ("Emission probabilities of photons with discrete energies via photo-disintegration with the%s\n"
                   "Z, N, Z_daughter, N_daughter, Ephoton [eV], emission probability for log10(gamma) = 6-14 in 201 steps" % field.info)
+
+
     np.savetxt(
-        'data/Photodisintegration/photon_emission_%s.txt' % field.name.split('_')[0],
+        folder + 'photon_emission_%s.txt' % field.name[:3],
         np.c_[d3exc['Z'], d3exc['N'], d3exc['Zd'], d3exc['Nd'], d3exc['Ephoton'] * 1e6, B3],
         fmt='%i\t%i\t%i\t%i\t%.9g' + '\t%.9g' * 201,
         header=header)
+
+if __name__ == "__main__":
+    # only representive fields of each type (CMB, EBL, URB) to save data space
+    fields = [
+        photonField.CMB(),
+        photonField.EBL_Gilmore12(),
+        photonField.URB_Protheroe96()
+    ]
+
+
+    for field in fields:
+        print(field.name)
+        processEmission(field)
+

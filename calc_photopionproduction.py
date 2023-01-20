@@ -3,41 +3,34 @@ import interactionRate
 import photonField
 import os
 import gitHelp as gh
+from units import eV
 
-eV = 1.60217657e-19
+cdir = os.path.split(__file__)[0]
+
 lgamma = np.linspace(6, 16, 251)  # tabulated Lorentz factors
 gamma = 10**lgamma
-
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12(),
-    photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower'),
-    photonField.URB_Protheroe96(),
-    photonField.URB_Fixsen11(),
-    photonField.URB_Nitu21()
-    ]
 
 # ----------------------------------------------------
 # Load proton / neutron cross sections [1/m^2] for tabulated energies [J]
 # truncate to largest length 2^i + 1 for Romberg integration
 # ----------------------------------------------------
-d = np.genfromtxt('tables/PPP/xs_proton.txt', unpack=True)
+ddir1 = os.path.join(cdir, 'tables/PPP/xs_proton.txt')
+d = np.genfromtxt(ddir1, unpack=True)
 eps1 = d[0, :2049] * 1e9 * eV  # [J]
 xs1 = d[1, :2049] * 1e-34  # [m^2]
 
-d = np.genfromtxt('tables/PPP/xs_neutron.txt', unpack=True)
+ddir2 = os.path.join(cdir, 'tables/PPP/xs_neutron.txt')
+d = np.genfromtxt(ddir2, unpack=True)
 eps2 = d[0, :2049] * 1e9 * eV  # [J]
 xs2 = d[1, :2049] * 1e-34  # [m^2]
 
 
-for field in fields:
-    print(field.name)
+def process(field):
+    """ 
+        calculate the interction rate on the given photonfield
+        
+        field : photon field as defined in photonField.py
+    """
 
     # output folder
     folder = 'data/PhotoPionProduction'
@@ -68,7 +61,7 @@ for field in fields:
     # ----------------------------------------------------
     redshifts = field.redshift
     if redshifts is None:
-        continue  # skip CMB
+        return  # skip CMB
     if len(redshifts) > 100:
         redshifts = redshifts[::10]  # thin out long redshift lists (Finke10)
 
@@ -91,3 +84,23 @@ for field in fields:
         header = ("Photo-pion interaction rate for the %s\n (redshift dependent)"
                   "z\tlog10(gamma)\t1/lambda_proton [1/Mpc]\t1/lambda_neutron [1/Mpc]" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
+
+if __name__ == "__main__":
+    fields = [
+        photonField.CMB(),
+        photonField.EBL_Kneiske04(),
+        photonField.EBL_Stecker05(),
+        photonField.EBL_Franceschini08(),
+        photonField.EBL_Finke10(),
+        photonField.EBL_Dominguez11(),
+        photonField.EBL_Gilmore12(),
+        photonField.EBL_Stecker16('upper'),
+        photonField.EBL_Stecker16('lower'),
+        photonField.URB_Protheroe96(),
+        photonField.URB_Fixsen11(),
+        photonField.URB_Nitu21()
+    ]
+
+    for field in fields:
+        print(field.name)
+        process(field)

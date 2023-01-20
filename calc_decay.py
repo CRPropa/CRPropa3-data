@@ -1,14 +1,51 @@
-from numpy import *
-import crpropa as crp
+import numpy as np
 from scipy.integrate import quad
 import gitHelp as gh
+import os
+from units import mass_electron, c_squared, c_light, h_planck, keV, amu
+
+cdir = os.path.split(__file__)[0]
 
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
 # Decay Radiation Search: gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp --> gamma_NuDat2.txt
+#
+class NuclearMassTable(object):
+    """Class to provide tabulated nuclear masses
+    
+    This function reimplements the basic functionality of
+    CRPropa's particleMass module see here:
+    https://github.com/CRPropa/CRPropa3/blob/master/include/crpropa/ParticleMass.h
+    """
+
+    def __init__(self):
+        try:
+            self.massTable = np.loadtxt('data/nuclear_mass.txt', usecols=(2))
+        except FileNotFoundError:
+            print("The file 'data/nuclear_mass.txt' was not found.")
+            print("Run the script calc_mass.py and try again.")
+
+    def getMass(self, id: int) -> float:
+        """Helper function to return tabulated nuclear masses"""
+        return self.massTable[id]
+    
+    def nuclearMass(self, A: int, Z: int) -> float: 
+        """nuclear mass for given mass (A) and charge (Z) number
+        
+        Particle masses that are not tabulated are approximated by
+        A*amu-Z*mass_electron.
+        """
+
+        if ((A < 1) or (A > 56) or (Z < 0) or (Z > 26) or (Z > A)):
+            print ("nuclearMass: nuclear mass not found in the mass table for A = {}, Z = {}. Approximated value used A * amu - Z * m_e instead.".format(A, Z))
+            return A * amu - Z * mass_electron
+        N = A - Z
+        
+        return self.getMass(Z * 31 + N)
 
 class Decay:
     def load(self, s):
+        """ extract decay parameter from a given line of the data file. """
         l = s.split('\t')
         self.Z = int(l[2])
         self.N = int(l[3])
@@ -20,11 +57,11 @@ class Decay:
         # decay time
         s = l[9].strip()
         if s == 'infinity':
-            self.tau = inf
+            self.tau = np.inf
         elif s == '':
             self.tau = 0
         else:
-            self.tau = float(s) / log(2)  # half-life --> life time
+            self.tau = float(s) / np.log(2)  # half-life --> life time
 
         # branching ratio
         s = ''.join(c for c in l[13] if c not in ('>','<','=','~','%',' ','?','\n'))
@@ -38,12 +75,15 @@ class Decay:
         return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f' % (self.Z, self.N, self.mode, self.tau, self.br)
 
     def isStable(self):
-        return self.tau == inf
+        """ returns if the nucleus is stable or not"""
+        return self.tau == np.inf
 
     def isBetaPlus(self):
+        """ returns if the nucleus has a beta plus decay mode"""
         return self.mode.find('E') > -1
 
     def isBetaMinus(self):
+        """ returns if the nucleus has a beta minus decay mode"""
         return self.mode.find('B') > -1
 
 class GammaEmission:
@@ -71,7 +111,9 @@ class GammaEmission:
 ### parse gamma emission data file
 print ('\nParsing gamma emission data file')
 print ('-------------------------------------')
-data = open('tables/gamma_NuDat2.txt')
+
+datapath = os.path.join(cdir, 'tables/gamma_NuDat2.txt')
+data = open(datapath)
 lines = data.readlines()[1:-3] # skip header and footer
 data.close()
 
@@ -142,7 +184,8 @@ print (g1, ' <- set photon emission probability to 100%\n')
 ### parse decay data file
 print ('\nParsing decay data file')
 print ('-------------------------------------')
-fin = open('tables/decay_NuDat2.txt')
+datapath = os.path.join(cdir, 'tables/decay_NuDat2.txt')
+fin = open(datapath)
 lines = fin.readlines()
 fin.close()
 
@@ -273,9 +316,11 @@ for z in range(27):
 # see Basdevant, Fundamentals in Nuclear Physics, 4.3.2 and 4.3.3
 print ('\nBeta+ correction')
 print ('-------------------------------------')
-Qe = crp.mass_electron * crp.c_squared  # electron energy [J]
+Qe = mass_electron * c_squared  # electron energy [J]
 a0 = 5.29177e-11  # Bohr radius [m]
-hbar_c = crp.c_light * (crp.h_planck / 2 / pi)  # [m/J]
+hbar_c = c_light * (h_planck / 2 / np.pi)  # [m/J]
+
+nucMass = NuclearMassTable()
 
 for Z in range(27):
     for N in range(31):
@@ -284,9 +329,9 @@ for Z in range(27):
                 continue
 
             A  = Z+N
-            m1 = crp.nuclearMass(A, Z)
-            m2 = crp.nuclearMass(A, Z-1)
-            dm = (m1 - m2) * crp.c_squared
+            m1 = nucMass.nuclearMass(A, Z)
+            m2 = nucMass.nuclearMass(A, Z-1)
+            dm = (m1 - m2) * c_squared
 
             Qec   = (dm + Qe)
             Qbeta = (dm - Qe)
@@ -294,17 +339,16 @@ for Z in range(27):
             # check if energetically possible
             if Qbeta < 0:
                 print (d, ' <- make stable (beta+ decay not possible)')
-                d.tau = inf
+                d.tau = np.inf
                 continue
 
-            f = lambda E: E * sqrt(E**2 - Qe**2) * (dm - E)**2
+            f = lambda E: E * np.sqrt(E**2 - Qe**2) * (dm - E)**2
             I, Ierr = quad(f, Qe, dm)
 
             # ratio tau_beta+ / tau_ec
-            f = pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
+            f = np.pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
             if f < 0:
                 print (Qec)
-                print (I1(Q/Qe))
             print (d, ' <- beta+ correction %.1e'%f)
             d.tau *= 1 + f
 
@@ -314,7 +358,7 @@ for Z in range(27):
             except:
                 continue  # no gamma entry
             for i, Egamma in enumerate(g.energy):
-                Egamma *= crp.keV
+                Egamma *= keV
                 if Egamma > Qbeta:
                     print (d, ' <- remove gamma decay (Egamma %g < %g = Q)' % (Egamma, Qbeta))
                     g.energy.pop(i)
@@ -349,8 +393,11 @@ for z in range(0,27):
             d.mode = 'N'
         dList.append(d)
 
-
-### save decay table
+# output folder
+folder = 'data'
+if not os.path.exists(folder):
+    os.makedirs(folder)
+# save decay table
 fout = open('data/nuclear_decay.txt','w')
 # Add git hash of crpropa-data repository to header
 try:
@@ -451,7 +498,7 @@ for z in range(1,27):
         if (z + n)==0:
             continue
         for d in decayTable[z][n]:
-            if d.tau != inf:
+            if d.tau != np.inf:
                 continue
             fout.write('%i\t%i\t%i\n' % (z, n, z+n))
 fout.close()
