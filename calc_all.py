@@ -165,7 +165,8 @@ def compress():
     print("#"*50)
     print("Compressing the ./data directory.")
     t1 = time.time()
-    datestr = "-".join([str(x) for x in time.localtime()[:3]])
+    # datestr format YYYY-MM-DD
+    datestr = "-".join([str(x).zfill(2) for x in time.localtime()[:3]])
     subprocess.run(["tar", "-czf", "data-"+datestr+".tar.gz", "./data"])
     t2 = time.time()
     print("\nCompressed files generated in {} seconds.".format(round(t2-t1, 2)))
