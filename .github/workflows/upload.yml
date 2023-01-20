@@ -4,17 +4,21 @@ name: Upload Testfile
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
+#on:
+#  workflow_dispatch:
+#    # Inputs the workflow accepts.
+#    inputs:
+#      name:
+#        # Description to be shown in the UI 
+#        description: 'Filename'
+#        # Default value if no value is explicitly provided
+#        default: 'data-YYYY-MM-DD'
+#        # Input has to be provided for the workflow to run
+#        required: true
+
 on:
-  workflow_dispatch:
-    # Inputs the workflow accepts.
-    inputs:
-      name:
-        # Description to be shown in the UI 
-        description: 'Filename'
-        # Default value if no value is explicitly provided
-        default: 'data-YYYY-MM-DD'
-        # Input has to be provided for the workflow to run
-        required: true
+  push:
+    branches: [ "CI" ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -90,8 +94,10 @@ jobs:
     - name: Upload to sciebo
       shell: bash
       run: |
-        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz"
-        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz-CHECKSUM" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz-CHECKSUM"
+        # curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "$data-{{ github.event.inputs.name }}.tar.gz" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/data-2023-1-20.tar.gz"
+        # curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "$data-{{ github.event.inputs.name }}.tar.gz-CHECKSUM" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/data-2023-1-20.tar.gz-CHECKSUM"
+        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "data-2023-1-20.tar.gz" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/data-2023-1-20.tar.gz"
+        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "data-2023-1-20.tar.gz-CHECKSUM" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/data-2023-1-20.tar.gz-CHECKSUM"
       env:
           # Login credentials are stored as encrypted secrets in the repository settings on github.
           SCIEBO_USR: ${{ secrets.SCIEBO_CRPDATA_USR }}
