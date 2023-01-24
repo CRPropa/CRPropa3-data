@@ -228,6 +228,8 @@ def createCRPropaDefault():
         photonField.EBL_Franceschini08(),
         photonField.EBL_Finke10(),
         photonField.EBL_Dominguez11(),
+        photonField.EBL_Dominguez11('lower'),
+        photonField.EBL_Dominguez11('upper'),
         photonField.EBL_Gilmore12(),
         photonField.EBL_Stecker16('lower'),
         photonField.EBL_Stecker16('upper')
