@@ -1,10 +1,10 @@
 from genericpath import isdir
 import numpy as np
 import os
-import photonField
 import interactionRate
 import gitHelp as gh
 from crpropa import eV
+from calc_all import fields_cmbebl, fields_urb, reduced_fields
 
 cdir = os.path.split(__file__)[0]
 
@@ -107,25 +107,6 @@ def processRate(field):
         fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
         header=header)
 
-if __name__ == "__main__":
-    fields = [
-        photonField.CMB(),
-        photonField.EBL_Kneiske04(),
-        photonField.EBL_Stecker05(),
-        photonField.EBL_Franceschini08(),
-        photonField.EBL_Finke10(),
-        photonField.EBL_Dominguez11(),
-        photonField.EBL_Gilmore12(),
-        photonField.EBL_Stecker16('upper'),
-        photonField.EBL_Stecker16('lower'),
-        photonField.URB_Protheroe96(),
-        photonField.URB_Fixsen11(),
-        photonField.URB_Nitu21()
-        ]
-    
-    for field in fields:
-        processRate(field)
-
 
 
 # ----------------------------------------------------
@@ -162,15 +143,13 @@ def processEmission(field):
         header=header)
 
 if __name__ == "__main__":
+
+    for field in fields_cmbebl+fields_urb:
+        print('{} interaction rate'.format(field.name))
+        processRate(field)
+
     # only representive fields of each type (CMB, EBL, URB) to save data space
-    fields = [
-        photonField.CMB(),
-        photonField.EBL_Gilmore12(),
-        photonField.URB_Protheroe96()
-    ]
-
-
-    for field in fields:
-        print(field.name)
+    for field in  reduced_fields:
+        print('{} secondary yields'.format(field.name))
         processEmission(field)
 

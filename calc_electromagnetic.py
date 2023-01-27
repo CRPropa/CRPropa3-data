@@ -1,10 +1,10 @@
 from __future__ import division
 import numpy as np
 import interactionRate
-import photonField
 import os
 import gitHelp as gh
 from crpropa import eV, mass_electron, c_light
+from calc_all import fields_cmbebl, fields_urb
 
 me2 = (mass_electron*c_light**2.) ** 2  # squared electron mass [J^2/c^4]
 sigmaThomson = 6.6524e-29  # Thomson cross section [m^2]
@@ -158,22 +158,8 @@ def process(sigma, field, name):
     del data, rate, skin, skin_save, rate_save
 
 if __name__ == "__main__":
-    fields = [
-        photonField.CMB(),
-        photonField.EBL_Kneiske04(),
-        photonField.EBL_Stecker05(),
-        photonField.EBL_Franceschini08(),
-        photonField.EBL_Finke10(),
-        photonField.EBL_Dominguez11(),
-        photonField.EBL_Gilmore12(),
-        photonField.EBL_Stecker16('lower'),
-        photonField.EBL_Stecker16('upper'),
-        photonField.URB_Protheroe96(),
-        photonField.URB_Fixsen11(),
-        photonField.URB_Nitu21()
-        ]
 
-    for field in fields:
+    for field in fields_cmbebl+fields_urb:
         print(field.name)
         process(sigmaPP, field, 'EMPairProduction')
         process(sigmaDPP, field, 'EMDoublePairProduction')

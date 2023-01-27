@@ -1,6 +1,36 @@
 import time
 import subprocess
 import photonField
+
+# Field list used in the default CRPropa tar-ball
+# imported in calc_* files therefore the have to be 
+# defined before other import statements.
+reduced_fields = [
+        photonField.CMB(),
+        photonField.EBL_Gilmore12(),
+        photonField.URB_Protheroe96()
+        ]
+
+fields_cmbebl = [
+        photonField.CMB(),
+        photonField.EBL_Kneiske04(),
+        photonField.EBL_Stecker05(),
+        photonField.EBL_Franceschini08(),
+        photonField.EBL_Finke10(),
+        photonField.EBL_Dominguez11(),
+        photonField.EBL_Dominguez11('lower'),
+        photonField.EBL_Dominguez11('upper'),
+        photonField.EBL_Gilmore12(),
+        photonField.EBL_Stecker16('lower'),
+        photonField.EBL_Stecker16('upper')
+    ]
+
+fields_urb = [
+        photonField.URB_Protheroe96(),
+        photonField.URB_Fixsen11(),
+        photonField.URB_Nitu21()
+    ]
+
 import calc_elasticscattering as es
 import calc_electromagnetic as em
 import calc_pairproduction as bh
@@ -23,7 +53,7 @@ def elastic_scattering(fields: list):
     """Creates elastic scattering tables
     
     Input
-        fields: list of CRPropa photonField class instances
+        fields: list of photonField class instances
     """
 
     print("#"*50)
@@ -40,7 +70,7 @@ def EM_processes(fields: list):
     """Calculate electromagnetic processes
     
     Input
-        fields: list of CRPropa photonField class instances
+        fields: list of photonField class instances
     """
 
     t1 = time.time()
@@ -75,7 +105,7 @@ def BH_pair_production(fields: list):
     """Creates hadronic pair production
     
     Input
-        fields: list of CRPropa photonField class instances
+        fields: list of photonField class instances
     """
 
     print("#"*50)
@@ -93,7 +123,10 @@ def photo_disintegration(rateFields: list, emissionFields: list):
     """Calculate photo disintegration
     
     Input
-        fields: list of CRPropa photonField class instances
+        ratefields: list of photonField class instances used 
+                    for interaction rates
+        emissionFields: list of photonField class instances used 
+                        for secondary production 
     """
 
     print("#"*50)
@@ -115,7 +148,7 @@ def photon_fields(fields: list):
     This calls routines to calculate, e.g., the redshift scaling files.
 
     Input
-        fields: list of CRPropa photonField class instances
+        fields: list of photonField class instances
     """
 
     print("#"*50)
@@ -132,7 +165,7 @@ def photopion_production(fields: list):
     """Creates photo pion production tables
     
     Input
-        fields: list of CRPropa photonField class instances
+        fields: list of photonField class instances
     """
 
     print("#"*50)
@@ -194,7 +227,7 @@ def createPhotonTargetInteractions(fields: list):
     """Create all interaction tables that depend on a photon field
     
     Input
-        fields: list of list of CRPropa photonField class instances
+        fields: list of photonField class instances
     """
     elastic_scattering(fields)
     EM_processes(fields)
@@ -214,32 +247,6 @@ def createCRPropaDefault():
     to reduce the amount of data that need to be shipped 
     with the code.
     """
-
-    reduced_fields = [
-        photonField.CMB(),
-        photonField.EBL_Gilmore12(),
-        photonField.URB_Protheroe96()
-        ]
-
-    fields_cmbebl = [
-        photonField.CMB(),
-        photonField.EBL_Kneiske04(),
-        photonField.EBL_Stecker05(),
-        photonField.EBL_Franceschini08(),
-        photonField.EBL_Finke10(),
-        photonField.EBL_Dominguez11(),
-        photonField.EBL_Dominguez11('lower'),
-        photonField.EBL_Dominguez11('upper'),
-        photonField.EBL_Gilmore12(),
-        photonField.EBL_Stecker16('lower'),
-        photonField.EBL_Stecker16('upper')
-    ]
-
-    fields_urb = [
-        photonField.URB_Protheroe96(),
-        photonField.URB_Fixsen11(),
-        photonField.URB_Nitu21()
-    ]
 
     nuclear_decay()
     nuclear_mass()

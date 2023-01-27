@@ -1,7 +1,7 @@
-from pylab import *
-import crpropa
+import numpy as np
 import gitHelp as gh
 import os
+from crpropa import amu, mass_electron, mass_proton, mass_neutron
 
 cdir = os.path.split(__file__)[0]
 
@@ -17,7 +17,7 @@ cdir = os.path.split(__file__)[0]
 # http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&ascii=ascii2&isotype=all
 datapath = os.path.join(cdir, 'tables/mass_NIST.txt')
 fin = open(datapath, 'r')
-D = zeros((27, 31))
+D = np.zeros((27, 31))
 
 for i in range(4):
     fin.readline() # skip header
@@ -43,18 +43,18 @@ for line in fin.readlines():
             continue # skip isotopes with N > 30
 
         # mass in [kg] minus mass of electrons
-        D[z, n] = float(relAtomicMass) * crpropa.amu - z * crpropa.mass_electron
+        D[z, n] = float(relAtomicMass) * amu - z * mass_electron
 
 
 ### add neutron and proton mass
-D[1, 0] = crpropa.mass_proton
-D[0, 1] = crpropa.mass_neutron
+D[1, 0] = mass_proton
+D[0, 1] = mass_neutron
 
 ### fill empty entries in table with A * amu - Z * m_e approximation
 for z in range(27):
     for n in range(31):
         if D[z, n] == 0:
-            D[z, n] = (z + n) * crpropa.amu - z * crpropa.mass_electron
+            D[z, n] = (z + n) * amu - z * mass_electron
 
 
 # output folder

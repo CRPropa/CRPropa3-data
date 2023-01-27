@@ -1,9 +1,9 @@
 import numpy as np
 import interactionRate
-import photonField
 import os
 import gitHelp as gh
 from crpropa import eV
+from calc_all import fields_cmbebl, fields_urb
 
 cdir = os.path.split(__file__)[0]
 
@@ -86,21 +86,7 @@ def process(field):
     np.savetxt(fname, data, fmt=fmt, header=header)
 
 if __name__ == "__main__":
-    fields = [
-        photonField.CMB(),
-        photonField.EBL_Kneiske04(),
-        photonField.EBL_Stecker05(),
-        photonField.EBL_Franceschini08(),
-        photonField.EBL_Finke10(),
-        photonField.EBL_Dominguez11(),
-        photonField.EBL_Gilmore12(),
-        photonField.EBL_Stecker16('upper'),
-        photonField.EBL_Stecker16('lower'),
-        photonField.URB_Protheroe96(),
-        photonField.URB_Fixsen11(),
-        photonField.URB_Nitu21()
-    ]
 
-    for field in fields:
+    for field in fields_cmbebl+fields_urb:
         print(field.name)
         process(field)

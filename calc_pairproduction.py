@@ -7,14 +7,13 @@ References:
 import os
 import numpy as np
 from scipy import integrate
-import photonField
 import gitHelp as gh
-
+from calc_all import fields_cmbebl
 from crpropa import Mpc, c_squared, mass_electron, mass_proton, radius_electron, alpha_finestructure
 
 cdir = os.path.split(__file__)[0]
 
-me_c2 = mass_electron * c_squared  # electron mass in [J/c^2]
+me_c2 = mass_electron * c_squared  # electron mass in [J]
 
 def lossRate(gamma, field, z=0):
     """
@@ -127,17 +126,6 @@ if __name__ == "__main__":
     
     reformat_secondary_rates()
 
-    fields = [
-        photonField.CMB(),
-        photonField.EBL_Kneiske04(),
-        photonField.EBL_Stecker05(),
-        photonField.EBL_Franceschini08(),
-        photonField.EBL_Finke10(),
-        photonField.EBL_Dominguez11(),
-        photonField.EBL_Gilmore12(),
-        photonField.EBL_Stecker16('upper'),
-        photonField.EBL_Stecker16('lower')]
-
-    for field in fields:
+    for field in fields_cmbebl:
         print(field.name)
         process(field)

@@ -1,9 +1,8 @@
 import numpy as np
 import os
-import photonField
 import interactionRate as iR
 import gitHelp as gh
-
+from calc_all import reduced_fields
 from crpropa import eV
 
 cdir = os.path.split(__file__)[0]
@@ -74,12 +73,6 @@ def process(field):
 
 if __name__ == "__main__":
 
-    fields = [
-        photonField.CMB(),
-        photonField.EBL_Gilmore12(),
-        photonField.URB_Protheroe96()
-        ]
-
-    for field in fields:
+    for field in reduced_fields:
         print(field.name)
         process(field)

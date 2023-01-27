@@ -13,9 +13,9 @@ class PhotonField(object):
     def __init__(self):
         self.name = 'PhotonField'
         self.info = 'Base class photon field'
-        self.energy = []
+        self.energy = [] #[eV]
         self.redshift = None
-        self.photonDensity = []
+        self.photonDensity = [] #[eV^-1 cm^-3]
         self.outdir = 'data/Scaling'
 
     def createFiles(self):
@@ -132,9 +132,6 @@ class EBL_Kneiske04(EBL):
         self.files = datadir + 'EBL_Kneiske_2004/all_z'
         self.redshift = np.linspace(0, 5, 51)
 
-        #TODO: Streamline the calls to open the file
-        #TODO: Make data, photonDensity, energy, getEnergy consistent
-        #NOTE: Calling createFiles() reproduces the files of calc_photonFields
         # d[0] : eps [eV]
         # d[1-51] : n(eps), [1/m^3/eV]
         d = np.genfromtxt(self.files, unpack=True)
@@ -196,7 +193,7 @@ class EBL_Dole06(EBL):
         self.data[0] = eps[::-1], n[::-1]
 
     #TODO: Check if necessary information is available to create photonDensity and energy arrays
-    #NOTE: EBL_Kneiske10 was and is still *not* available in CRPropa. If this should be changed also 
+    #NOTE: EBL_Dole06 was and is still *not* available in CRPropa. If this should be changed also 
     #      CRPropa's PhotonBackground.h needs to be updated.
     def createFiles(self):
         print("WARNING "+self.__class__.__name__+": Not all relevant data available. No Files produced")
@@ -204,10 +201,6 @@ class EBL_Dole06(EBL):
 
 class EBL_Franceschini08(EBL):
     """ IRB model from Fanceschini 2008 """
-
-    #TODO: Streamline the calls to open the file
-    #TODO: Make data, photonDensity, energy, getEnergy consistent
-    #NOTE: Calling createFiles() reproduces the files of calc_photonFields
 
     def __init__(self):
         super(EBL_Franceschini08, self).__init__()
@@ -289,10 +282,6 @@ class EBL_Stecker05(EBL):
 
 class EBL_Finke10(EBL):
     """ IRB model from Finke 2010"""
-
-    #TODO: Streamline the calls to open the file
-    #TODO: Make data, photonDensity, energy, getEnergy consistent
-    #NOTE: Calling createFiles() reproduces the files of calc_photonFields
 
     def __init__(self):
         super(EBL_Finke10, self).__init__()
