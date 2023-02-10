@@ -1,9 +1,8 @@
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, romb, quad
 import os
-
-eV = 1.60217657e-19  # [J]
-Mpc = 3.08567758e22  # [m]
+from crpropa import eV, Mpc
+import gitHelp as gh
 
 
 def calc_rate_eps(eps, xs, gamma, field, z=0, cdf=False):
@@ -53,7 +52,7 @@ def calc_rate_s(s_kin, xs, E, field, z=0, cdf=False):
     if cdf:
         # precalculate the field integral if it not exists and load it afterwards
         calculateDensityIntegral(field)
-        file = "data/fieldDensity/" + field.name + ".txt"
+        file = "temp/fieldDensity/" + field.name + ".txt"
         densityIntegral = np.loadtxt(file)
 
         # interpolate
@@ -81,7 +80,7 @@ def calculateDensityIntegral(field):
     """
 
     # check if file already exist
-    folder = "data/fieldDensity/"
+    folder = "temp/fieldDensity/"
     if not os.path.isdir(folder):
         os.makedirs(folder)
     file = folder + field.name + ".txt"

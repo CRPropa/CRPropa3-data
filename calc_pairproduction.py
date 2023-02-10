@@ -7,19 +7,13 @@ References:
 import os
 import numpy as np
 from scipy import integrate
-import photonField
 import gitHelp as gh
+from calc_all import fields_cmbebl
+from crpropa import Mpc, c_squared, mass_electron, mass_proton, radius_electron, alpha_finestructure
 
+cdir = os.path.split(__file__)[0]
 
-eV = 1.60217657e-19  # [J]
-Mpc = 3.08567758e22  # [m]
-c0 = 299792458.  # [m/s]
-r0 = 2.817940e-15  # classical electron radius [m]
-alpha = 7.297352e-3  # fine-structure constant
-me = 9.10938291e-31  # electron mass [kg]
-me_c2 = me * c0**2  # electron mass in [J/c^2]
-mp = 1.67262178e-27  # proton mass [kg]
-
+me_c2 = mass_electron * c_squared  # electron mass in [J]
 
 def lossRate(gamma, field, z=0):
     """
@@ -71,33 +65,17 @@ def lossRate(gamma, field, z=0):
             integrand, lkmin, lkmax, points=lksep, args=(g, field))
 
     # prefactor of equation 3.11 (C92) and conversion [1/s] --> [1/Mpc]
-    a = alpha * r0**2 * me / mp * Mpc
+    a = alpha_finestructure * radius_electron**2 * mass_electron / mass_proton * Mpc
     return a * rate / gamma, a * err / gamma
 
+def process(field):
+    """
+        Generate tables for energy loss rate
 
-# -------------------------------------------------
-# Generate tables for energy loss rate
-# -------------------------------------------------
-gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
+        field : photon field as defined in photonField.py
+    """ 
+    gamma = np.logspace(6, 14, 161)  # tabulated Lorentz factors
 
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12(),
-    photonField.EBL_Stecker16('upper'),
-    photonField.EBL_Stecker16('lower')]
-    
-# output folder
-folder = 'data/ElectronPairProduction'
-if not os.path.exists(folder):
-    os.makedirs(folder)
-
-for field in fields:
-    print(field.name)
     rate = lossRate(gamma, field)[0]
     s = (rate > 1e-12)  # truncate if loss rate is < 10^-12 / Mpc
 
@@ -114,24 +92,40 @@ for field in fields:
                   "log10(gamma)\t1/gamma dgamma/dx [1/Mpc]" % field.info)
     np.savetxt(fname, data, fmt=fmt, header=header)
 
+def reformat_secondary_rates():
+    """Reformat CRPropa2 tables of differential spectrum of secondary electrons
+    This should be reimplemented for extension to the other backgrounds,
+    cross-checking and documentation.
+    """
+    dfile1 = os.path.join(cdir, 'tables/EPP/pair_spectrum_cmb.table')
+    d1 = np.genfromtxt(dfile1, unpack=True)
 
-# -------------------------------------------------
-# Reformat CRPropa2 tables of differential spectrum of secondary electrons
-# This should be reimplemented for extension to the other backgrounds,
-# cross-checking and documentation.
-# -------------------------------------------------
-d1 = np.genfromtxt('tables/EPP/pair_spectrum_cmb.table', unpack=True)
-d2 = np.genfromtxt('tables/EPP/pair_spectrum_cmbir.table', unpack=True)
+    dfile2 = os.path.join(cdir, 'tables/EPP/pair_spectrum_cmbir.table')
+    d2 = np.genfromtxt(dfile2, unpack=True)
 
-# amplitudes dN/dEe(Ep)
-A1 = d1[2].reshape((70, 170))  # CMB
-A2 = d2[2].reshape((70, 170))  # CMB + IRB (which?)
-A3 = A2 - A1  # IRB only
+    # amplitudes dN/dEe(Ep)
+    A1 = d1[2].reshape((70, 170))  # CMB
+    A2 = d2[2].reshape((70, 170))  # CMB + IRB (which?)
+    A3 = A2 - A1  # IRB only
 
-# # normalize to 1
-# A1 = (A1.T / sum(A1, axis=1)).T
-# A3 = (A3.T / sum(A3, axis=1)).T
+    # # normalize to 1
+    # A1 = (A1.T / sum(A1, axis=1)).T
+    # A3 = (A3.T / sum(A3, axis=1)).T
 
-# save
-np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
-np.savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')
+    # output folder
+    folder = 'data/ElectronPairProduction'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    # save
+    np.savetxt('data/ElectronPairProduction/spectrum_CMB.txt', A1, fmt='%.5e')
+    np.savetxt('data/ElectronPairProduction/spectrum_IRB.txt', A3, fmt='%.5e')
+
+
+if __name__ == "__main__":
+    
+    reformat_secondary_rates()
+
+    for field in fields_cmbebl:
+        print(field.name)
+        process(field)

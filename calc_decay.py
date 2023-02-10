@@ -2,6 +2,9 @@ from numpy import *
 import crpropa as crp
 from scipy.integrate import quad
 import gitHelp as gh
+import os
+
+cdir = os.path.split(__file__)[0]
 
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
@@ -9,6 +12,7 @@ import gitHelp as gh
 
 class Decay:
     def load(self, s):
+        """ extract decay parameter from a given line of the data file. """
         l = s.split('\t')
         self.Z = int(l[2])
         self.N = int(l[3])
@@ -38,12 +42,15 @@ class Decay:
         return 'Z=%i N=%i mode=%s tau=%.1e br=%.2f' % (self.Z, self.N, self.mode, self.tau, self.br)
 
     def isStable(self):
+        """ returns if the nucleus is stable or not"""
         return self.tau == inf
 
     def isBetaPlus(self):
+        """ returns if the nucleus has a beta plus decay mode"""
         return self.mode.find('E') > -1
 
     def isBetaMinus(self):
+        """ returns if the nucleus has a beta minus decay mode"""
         return self.mode.find('B') > -1
 
 class GammaEmission:
@@ -71,7 +78,9 @@ class GammaEmission:
 ### parse gamma emission data file
 print ('\nParsing gamma emission data file')
 print ('-------------------------------------')
-data = open('tables/gamma_NuDat2.txt')
+
+datapath = os.path.join(cdir, 'tables/gamma_NuDat2.txt')
+data = open(datapath)
 lines = data.readlines()[1:-3] # skip header and footer
 data.close()
 
@@ -142,7 +151,8 @@ print (g1, ' <- set photon emission probability to 100%\n')
 ### parse decay data file
 print ('\nParsing decay data file')
 print ('-------------------------------------')
-fin = open('tables/decay_NuDat2.txt')
+datapath = os.path.join(cdir, 'tables/decay_NuDat2.txt')
+fin = open(datapath)
 lines = fin.readlines()
 fin.close()
 
@@ -304,7 +314,6 @@ for Z in range(27):
             f = pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
             if f < 0:
                 print (Qec)
-                print (I1(Q/Qe))
             print (d, ' <- beta+ correction %.1e'%f)
             d.tau *= 1 + f
 
@@ -349,8 +358,11 @@ for z in range(0,27):
             d.mode = 'N'
         dList.append(d)
 
-
-### save decay table
+# output folder
+folder = 'data'
+if not os.path.exists(folder):
+    os.makedirs(folder)
+# save decay table
 fout = open('data/nuclear_decay.txt','w')
 # Add git hash of crpropa-data repository to header
 try:

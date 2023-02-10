@@ -1,13 +1,12 @@
 from __future__ import division
 import numpy as np
 import interactionRate
-import photonField
 import os
 import gitHelp as gh
+from crpropa import eV, mass_electron, c_light
+from calc_all import fields_cmbebl, fields_urb
 
-
-eV = 1.60217657e-19  # [J]
-me2 = (510.998918e3 * eV) ** 2  # squared electron mass [J^2/c^4]
+me2 = (mass_electron*c_light**2.) ** 2  # squared electron mass [J^2/c^4]
 sigmaThomson = 6.6524e-29  # Thomson cross section [m^2]
 alpha = 1 / 137.035999074  # fine structure constant
 
@@ -77,6 +76,14 @@ def getEmin(sigma, field):
 
 
 def process(sigma, field, name):
+    """ 
+        calculate the interaction rates for a given process on a given photon field 
+
+        sigma : crossection (function) of the EM-process
+        field : photon field as defined in photonField.py
+        name  : name of the process which will be calculated. Necessary for the naming of the data folder
+    """
+
     # output folder
     folder = 'data/' + name
     if not os.path.exists(folder):
@@ -150,25 +157,11 @@ def process(sigma, field, name):
 
     del data, rate, skin, skin_save, rate_save
 
+if __name__ == "__main__":
 
-fields = [
-    photonField.CMB(),
-    photonField.EBL_Kneiske04(),
-    photonField.EBL_Stecker05(),
-    photonField.EBL_Franceschini08(),
-    photonField.EBL_Finke10(),
-    photonField.EBL_Dominguez11(),
-    photonField.EBL_Gilmore12(),
-    photonField.EBL_Stecker16('lower'),
-    photonField.EBL_Stecker16('upper'),
-    photonField.URB_Protheroe96(),
-    photonField.URB_Fixsen11(),
-    photonField.URB_Nitu21()
-    ]
-
-for field in fields:
-    print(field.name)
-    process(sigmaPP, field, 'EMPairProduction')
-    process(sigmaDPP, field, 'EMDoublePairProduction')
-    process(sigmaTPP, field, 'EMTripletPairProduction')
-    process(sigmaICS, field, 'EMInverseComptonScattering')
+    for field in fields_cmbebl+fields_urb:
+        print(field.name)
+        process(sigmaPP, field, 'EMPairProduction')
+        process(sigmaDPP, field, 'EMDoublePairProduction')
+        process(sigmaTPP, field, 'EMTripletPairProduction')
+        process(sigmaICS, field, 'EMInverseComptonScattering')

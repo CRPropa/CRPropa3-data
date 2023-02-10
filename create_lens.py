@@ -104,7 +104,7 @@ cfg = open(os.path.join(args.lensname, 'lens.cfg'), 'w')
 cfg.write('# Magnetic lens {} for usage with CRPRopa3\n'.format(args.lensname))
 cfg.write('# Created on {} with {} backtracked particles\n'.format(time.ctime(), tot_cr))
 try:
-    cfg.write('# Produced with crpropa-data version: {}\n'.format(gh.get_git_revision_hash())
+    cfg.write('# Produced with crpropa-data version: {}\n'.format(gh.get_git_revision_hash()))
 except:
     pass
 cfg.write('#\n')
