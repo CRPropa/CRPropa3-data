@@ -2,8 +2,8 @@ import numpy as np
 import interactionRate
 import os
 import gitHelp as gh
-from crpropa import eV
 from calc_all import fields_cmbebl, fields_urb
+from units import eV
 
 cdir = os.path.split(__file__)[0]
 

@@ -1,5 +1,5 @@
 import numpy as np
-from crpropa import eV, erg, c_light, h_planck, k_boltzmann, hertz, ccm
+from units import eV, erg, c_light, h_planck, k_boltzmann, hertz, ccm
 import os
 import gitHelp as gh
 import pandas as pd

@@ -198,7 +198,8 @@ def compress():
     print("#"*50)
     print("Compressing the ./data directory.")
     t1 = time.time()
-    datestr = "-".join([str(x) for x in time.localtime()[:3]])
+    # datestr format YYYY-MM-DD
+    datestr = "-".join([str(x).zfill(2) for x in time.localtime()[:3]])
     subprocess.run(["tar", "-czf", "data-"+datestr+".tar.gz", "./data"])
     t2 = time.time()
     print("\nCompressed files generated in {} seconds.".format(round(t2-t1, 2)))
@@ -247,9 +248,8 @@ def createCRPropaDefault():
     to reduce the amount of data that need to be shipped 
     with the code.
     """
-
-    nuclear_decay()
     nuclear_mass()
+    nuclear_decay()
     elastic_scattering(reduced_fields)
     EM_processes(fields_cmbebl+fields_urb)
     BH_pair_production(fields_cmbebl)

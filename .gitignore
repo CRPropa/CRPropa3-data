@@ -1,4 +1,11 @@
 *.pyc
+*.tar.gz
+*.tar.gz*
 
 plots/
 temp/
+
+data/
+!data/CustomPhotonField/
+!data/dint/
+!data/EleCa/

@@ -1,10 +1,9 @@
-from genericpath import isdir
 import numpy as np
 import os
 import interactionRate
 import gitHelp as gh
-from crpropa import eV
 from calc_all import fields_cmbebl, fields_urb, reduced_fields
+from units import eV
 
 cdir = os.path.split(__file__)[0]
 
