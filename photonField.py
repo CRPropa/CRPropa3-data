@@ -440,6 +440,112 @@ class EBL_Stecker16(EBL):
             self.photonDensity.append(dens)
             self.energy.append(eps_eV[i])
 
+class EBL_Saldana21(EBL):
+    """ IRB model from Saldana-Lopez 2011
+
+    EBL intensities from the paper "An observational determination of the evolving extragalactic background light from the multiwavelength HST/CANDELS survey in the Fermi and CTA era ", A. Saldana-Lopez et al., MNRAS, Volume 507, Issue 4, pp.5144-5160
+    """
+
+    def __init__(self, which='best'):
+        """ Constructor
+
+        Input:
+          which : \"best\" for the best fit model, \"upper\" or \"lower\" for the upper/lower uncertaincy.
+        """
+        super(EBL_Saldana21, self).__init__()
+
+        self.info = 'cosmic infrared and optical background radiation ({}) model of Saldana-Lopez et al. 2021 (arXiv:2012.03035)'.format(which)
+        self.redshift = np.array([0., 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0, 5.2, 5.4, 5.6, 5.8, 6.])
+
+        if which == 'best':
+            fname = 'EBL_Saldana_2021/ebl_saldana21_comoving.txt'
+            self.name = 'IRB_Saldana21'
+
+            energy, photonDensity = self.load_density(fname)
+            self.data = self.load_data(fname)
+            self.photonDensity = energy
+            self.energy = photonDensity
+        elif which == 'upper':
+            fname = 'EBL_Saldana_2021/ebl_saldana21_comoving.txt'
+            fname_err = 'EBL_Saldana_2021/eblerr_saldana21_comoving.txt'
+            self.name = 'IRB_Saldana21_upper'
+
+            energy, photonDensity = self.load_density(fname)
+            data = self.load_data(fname)
+
+            _, photonDensityErr = self.load_density(fname_err)
+            dataErr = self.load_data(fname_err)
+
+            photonDensity = [
+                val + err
+                for val, err in zip(photonDensity, photonDensityErr)
+            ]
+
+            data = {
+                key: (data[key][0], data[key][1] + dataErr[key][1])
+                for key in data
+            }
+
+            self.data = data
+            self.photonDensity = energy
+            self.energy = photonDensity
+        elif which == 'lower':
+            fname = 'EBL_Saldana_2021/ebl_saldana21_comoving.txt'
+            fname_err = 'EBL_Saldana_2021/eblerr_saldana21_comoving.txt'
+            self.name = 'IRB_Saldana21_lower'
+
+            energy, photonDensity = self.load_density(fname)
+            data = self.load_data(fname)
+
+            _, photonDensityErr = self.load_density(fname_err)
+            dataErr = self.load_data(fname_err)
+
+            photonDensity = [
+                val - err
+                for val, err in zip(photonDensity, photonDensityErr)
+            ]
+
+            data = {
+                key: (data[key][0], data[key][1] - dataErr[key][1])
+                for key in data
+            }
+
+            self.data = data
+            self.photonDensity = energy
+            self.energy = photonDensity
+        else:
+            raise ValueError('EBL_Saldana21 only provides "best", "upper" and "lower" models')
+
+    def load_data(self, fname):
+        """
+        Loads the model data in the EBL-class format
+        """
+        data = {}
+        d = np.genfromtxt(datadir + fname, unpack=True)
+        eps = h_planck * c_light / (d[0] * 1e-6)  # [J]
+        n = d[1:] * 1e-9 / eps**2 * (4 * np.pi / c_light)
+        for i, z in enumerate(self.redshift):
+            data[z] = eps[::-1], n[i][::-1]  # sort by ascending energy
+
+        return data
+
+    def load_density(self, fname):
+        """
+        Loads the model photon density
+        """
+        d = np.genfromtxt(datadir + fname, unpack=False)
+        eps = [h_planck*c_light / (eV * ccm) / fieldSlice[0]*eV for fieldSlice in d]  # [eV] | 1.238842 = h*c/1µ eV
+        #                          nW->W : J->eV : 1/m^3->1/cm^3 : 1/sm^2sr->1/m^3
+        n = np.array([fieldSlice[1:] * 1e-9 * eV / 1e6 / eps[i]**2 * (4 * np.pi / c_light) for i, fieldSlice in enumerate(d)])  # [1/eVcm^3] 
+        energy = []
+        for i,x in enumerate(n):
+            energy.append(eps[i]/eV)
+
+        photonDensity = [x for x in reversed(n)]
+        energy = [e for e in reversed(energy)]
+
+        return energy, photonDensity
+
 # --------------------------------------------------------
 # CRB (radio) models
 # --------------------------------------------------------
