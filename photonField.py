@@ -463,8 +463,8 @@ class EBL_Saldana21(EBL):
 
             energy, photonDensity = self.load_density(fname)
             self.data = self.load_data(fname)
-            self.photonDensity = energy
-            self.energy = photonDensity
+            self.photonDensity = photonDensity
+            self.energy = energy
         elif which == 'upper':
             fname = 'EBL_Saldana_2021/ebl_saldana21_comoving.txt'
             fname_err = 'EBL_Saldana_2021/eblerr_saldana21_comoving.txt'
@@ -487,8 +487,8 @@ class EBL_Saldana21(EBL):
             }
 
             self.data = data
-            self.photonDensity = energy
-            self.energy = photonDensity
+            self.photonDensity = photonDensity
+            self.energy = energy
         elif which == 'lower':
             fname = 'EBL_Saldana_2021/ebl_saldana21_comoving.txt'
             fname_err = 'EBL_Saldana_2021/eblerr_saldana21_comoving.txt'
@@ -511,8 +511,8 @@ class EBL_Saldana21(EBL):
             }
 
             self.data = data
-            self.photonDensity = energy
-            self.energy = photonDensity
+            self.photonDensity = photonDensity
+            self.energy = energy
         else:
             raise ValueError('EBL_Saldana21 only provides "best", "upper" and "lower" models')
 
