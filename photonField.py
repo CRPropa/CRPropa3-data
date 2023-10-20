@@ -738,7 +738,7 @@ if __name__ == '__main__':
     plot(x, y8, label='Gilmore 2012')
     fill_between(x, y7lo, y7up, facecolor='m', edgecolor='none', alpha=0.2, zorder=-1, label='Dominguez 2011 (limits)')
     fill_between(x, y9lo, y9up, facecolor='g', edgecolor='none', alpha=0.2, zorder=-1, label='Stecker 2016 (limits)')
-    fill_between(x, y10lo, y10up, facecolor='b', edgecolor='none', alpha=0.2, zorder=-1, label='Saldana 2023 (limits)')
+    fill_between(x, y10lo, y10up, facecolor='b', edgecolor='none', alpha=0.2, zorder=-1, label='Saldana 2021 (limits)')
 
 
     legend(loc='lower center', fontsize='x-small')
