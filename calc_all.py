@@ -22,7 +22,10 @@ fields_cmbebl = [
         photonField.EBL_Dominguez11('upper'),
         photonField.EBL_Gilmore12(),
         photonField.EBL_Stecker16('lower'),
-        photonField.EBL_Stecker16('upper')
+        photonField.EBL_Stecker16('upper'), 
+        photonField.EBL_Saldana21(), 
+        photonField.EBL_Saldana21('upper'), 
+        photonField.EBL_Saldana21('lower')
     ]
 
 fields_urb = [
