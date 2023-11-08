@@ -728,7 +728,6 @@ if __name__ == '__main__':
     y10lo = c * EBL_Saldana21('lower').getDensity(eps)
     y10up = c * EBL_Saldana21('upper').getDensity(eps)
 
-
     figure()
     plot(x, y1, label='Kneiske 2004')
     plot(x, y3, label='Stecker 2005')
@@ -739,7 +738,6 @@ if __name__ == '__main__':
     fill_between(x, y7lo, y7up, facecolor='m', edgecolor='none', alpha=0.2, zorder=-1, label='Dominguez 2011 (limits)')
     fill_between(x, y9lo, y9up, facecolor='g', edgecolor='none', alpha=0.2, zorder=-1, label='Stecker 2016 (limits)')
     fill_between(x, y10lo, y10up, facecolor='b', edgecolor='none', alpha=0.2, zorder=-1, label='Saldana 2021 (limits)')
-
 
     legend(loc='lower center', fontsize='x-small')
     loglog()
