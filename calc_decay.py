@@ -9,7 +9,7 @@ cdir = os.path.split(__file__)[0]
 # Script to preprocess the nuclear decay data table from the BNL NuDat2 database
 # Decay Search: http://www.nndc.bnl.gov/nudat2/indx_sigma.jsp, output: formatted file --> decay_NuDat2.txt
 # Decay Radiation Search: gamma_NuDat2.txt: http://www.nndc.bnl.gov/nudat2/indx_dec.jsp --> gamma_NuDat2.txt
-#
+
 class NuclearMassTable(object):
     """Class to provide tabulated nuclear masses
     
@@ -20,13 +20,18 @@ class NuclearMassTable(object):
 
     def __init__(self):
         try:
-            self.massTable = np.loadtxt('data/nuclear_mass.txt', usecols=(2))
+            datapath = os.path.join(cdir, 'data/nuclear_mass.txt')
+            self.massTable = np.loadtxt(datapath, usecols=(2))
         except FileNotFoundError:
             print("The file 'data/nuclear_mass.txt' was not found.")
             print("Run the script calc_mass.py and try again.")
 
     def getMass(self, id: int) -> float:
-        """Helper function to return tabulated nuclear masses"""
+        """Helper function to return tabulated nuclear masses
+        
+        id is not the usual CRPropa PID but id = Z * 31 + N
+        with Z the charge number and N the neutron number.
+        """
         return self.massTable[id]
     
     def nuclearMass(self, A: int, Z: int) -> float: 
@@ -330,7 +335,7 @@ for Z in range(27):
 
             A  = Z+N
             m1 = nucMass.nuclearMass(A, Z)
-            m2 = nucMass.nuclearMass(A, Z-1)
+            m2 = nucMass.nuclearMass(A, Z - 1)
             dm = (m1 - m2) * c_squared
 
             Qec   = (dm + Qe)
@@ -346,7 +351,7 @@ for Z in range(27):
             I, Ierr = quad(f, Qe, dm)
 
             # ratio tau_beta+ / tau_ec
-            f = np.pi**2 / 2 * (Z/a0*hbar_c)**3 * Qec**2 / I
+            f = np.pi**2 / 2 * (Z / a0*hbar_c)**3 * Qec**2 / I
             if f < 0:
                 print (Qec)
             print (d, ' <- beta+ correction %.1e'%f)
