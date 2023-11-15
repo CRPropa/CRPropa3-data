@@ -1,0 +1,39 @@
+name: Create test archive 
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  push:
+    branches: [ "master" ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "Create_CRPropa_default"
+  Create_CRPropa_default:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    # Python set up
+    - name: Preinstall
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+    - name: pip install
+      run: pip install -r requirements.txt
+    # Creating the default CRPropa data, compressing and calculating the checksum  
+    - name: Create tabulated data
+      run: |
+        python calc_all.py
+    - name: Archive data
+      uses: actions/upload-artifact@v3
+      with:
+          name: "crpropa-data"
+          path: |
+            data-*.tar.gz
+            data-*.tar.gz-CHECKSUM

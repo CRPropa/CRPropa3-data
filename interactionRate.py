@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, romb, quad
 import os
-from crpropa import eV, Mpc
+from units import eV, Mpc
 import gitHelp as gh
 
 

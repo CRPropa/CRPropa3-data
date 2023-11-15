@@ -1,7 +1,8 @@
 import numpy as np
 import gitHelp as gh
 import os
-from crpropa import amu, mass_electron, mass_proton, mass_neutron
+
+from units import amu, mass_electron, mass_proton, mass_neutron
 
 cdir = os.path.split(__file__)[0]
 

@@ -1,5 +1,5 @@
 import numpy as np
-from crpropa import eV, erg, c_light, h_planck, k_boltzmann, hertz, ccm
+from units import eV, erg, c_light, h_planck, k_boltzmann, hertz, ccm
 import os
 import gitHelp as gh
 import pandas as pd
@@ -738,7 +738,7 @@ if __name__ == '__main__':
     fill_between(x, y7lo, y7up, facecolor='m', edgecolor='none', alpha=0.2, zorder=-1, label='Dominguez 2011 (limits)')
     fill_between(x, y9lo, y9up, facecolor='g', edgecolor='none', alpha=0.2, zorder=-1, label='Stecker 2016 (limits)')
     fill_between(x, y10lo, y10up, facecolor='b', edgecolor='none', alpha=0.2, zorder=-1, label='Saldana 2021 (limits)')
-    
+
     legend(loc='lower center', fontsize='x-small')
     loglog()
     grid()

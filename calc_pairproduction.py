@@ -9,7 +9,7 @@ import numpy as np
 from scipy import integrate
 import gitHelp as gh
 from calc_all import fields_cmbebl
-from crpropa import Mpc, c_squared, mass_electron, mass_proton, radius_electron, alpha_finestructure
+from units import Mpc, c_squared, mass_electron, mass_proton, radius_electron, alpha_finestructure
 
 cdir = os.path.split(__file__)[0]
 
