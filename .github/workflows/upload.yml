@@ -68,10 +68,26 @@ jobs:
     - name: Upload to sciebo
       shell: bash
       run: |
-        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz"
-        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz-CHECKSUM" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz-CHECKSUM"
+        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz" --fail
+        curl -u "$SCIEBO_USR:$SCIEBO_PWD" -T  "${{ github.event.inputs.name }}.tar.gz-CHECKSUM" "https://ruhr-uni-bochum.sciebo.de/public.php/webdav/${{ github.event.inputs.name }}.tar.gz-CHECKSUM" --fail
       env:
           # Login credentials are stored as encrypted secrets in the repository settings on github.
           SCIEBO_USR: ${{ secrets.SCIEBO_CRPDATA_USR }}
           SCIEBO_PWD: ${{ secrets.SCIEBO_CRPDATA_PWD}}
-          
+    
+    - name: Create issue on CRPropa3 repository
+      uses: actions/github-script@v5
+      with:
+        script: |
+          const github = require('@actions/github');
+          const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+          const response = await octokit.rest.issues.create({
+            owner: 'CRPropa',
+            repo: 'CRPropa3',
+            title: 'Update CRPropa data download',
+            body: 'This issue was automatically created by the upload workflow of CRPropa3-data.
+              Please check if the download data string is up to date and if not, update the download link in the CMakelists.txt file.
+              The current download string is: ' + ${{ github.event.inputs.name }} + '.tar.gz'
+          });
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
