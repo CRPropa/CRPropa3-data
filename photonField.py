@@ -560,7 +560,7 @@ class EBL_Finke22(EBL):
         self.load_data()
     
     def load_data(self):
-        tmp_dict = {}
+        tmp_list = []
         
         for i, z in enumerate(self.redshift):
             data = pd.read_csv(self.files % z, sep="\s+", header=None)
@@ -573,13 +573,12 @@ class EBL_Finke22(EBL):
             
             # adding the energies only once, cause they are the same in every file
             if i == 0:
-                tmp_dict['energy'] = eps
-            tmp_dict[str(z)] = n
+                self.energy = eps
+            tmp_list.append( n * (erg / eV) / self.energy**2 ) # [1/cm^3/eV]
         
-        df = pd.DataFrame(tmp_dict)
-        self.energy = df['energy'].to_numpy()   # [eV]
-        self.photonDensity = [ (df.loc[i][1:] * (erg / eV) / (df.loc[i]['energy'])**2).to_numpy() for i in df.index ]   # [1/cm^3/eV]
-        
+        self.photonDensity = np.array(tmp_list).transpose()
+
+
 # --------------------------------------------------------
 # CRB (radio) models
 # --------------------------------------------------------
