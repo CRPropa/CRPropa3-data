@@ -546,6 +546,39 @@ class EBL_Saldana21(EBL):
 
         return energy, photonDensity
 
+class EBL_Finke22(EBL):
+    """ IRB model from FInke et al. 2022 """
+    
+    def __init__(self):
+        super(EBL_Finke22, self).__init__()
+        self.name = 'IRB_Finke22'
+        self.info = 'Cosmic infrared and optical background radiation model of Finke et al. 2022 (Model A).'
+        self.files = os.path.join(datadir, 'EBL_Finke_2022', 'z%.2f.dat')
+        self.redshift = np.arange(0, 7.02 , 0.02)
+        self.energy = []
+        self.photonDensity = []
+        self.load_data()
+    
+    def load_data(self):
+        tmp_list = []
+        
+        for i, z in enumerate(self.redshift):
+            data = pd.read_csv(self.files % z, sep="\s+", header=None)
+            # data[0]: photon energy [eV]
+            # data[1]: comoving energy density [erg/cm^3]
+            eps = data[0].to_numpy()
+            n = data[1].to_numpy()
+            
+            self.data[z] = (eps * eV) , (n * erg * 1e6 / (eps * eV)**2)   # [J] , dn/deps [1/m^3/J]
+            
+            # adding the energies only once, cause they are the same in every file
+            if i == 0:
+                self.energy = eps
+            tmp_list.append( n * (erg / eV) / self.energy**2 ) # [1/cm^3/eV]
+        
+        self.photonDensity = np.array(tmp_list).transpose()
+
+
 # --------------------------------------------------------
 # CRB (radio) models
 # --------------------------------------------------------
@@ -727,6 +760,7 @@ if __name__ == '__main__':
     y9lo = c * EBL_Stecker16('lower').getDensity(eps)
     y10lo = c * EBL_Saldana21('lower').getDensity(eps)
     y10up = c * EBL_Saldana21('upper').getDensity(eps)
+    y11  = c * EBL_Finke22().getDensity(eps)
 
     figure()
     plot(x, y1, label='Kneiske 2004')
@@ -738,7 +772,8 @@ if __name__ == '__main__':
     fill_between(x, y7lo, y7up, facecolor='m', edgecolor='none', alpha=0.2, zorder=-1, label='Dominguez 2011 (limits)')
     fill_between(x, y9lo, y9up, facecolor='g', edgecolor='none', alpha=0.2, zorder=-1, label='Stecker 2016 (limits)')
     fill_between(x, y10lo, y10up, facecolor='b', edgecolor='none', alpha=0.2, zorder=-1, label='Saldana 2021 (limits)')
-
+    plot(x, y11, label='Finke 2022')
+    
     legend(loc='lower center', fontsize='x-small')
     loglog()
     grid()
