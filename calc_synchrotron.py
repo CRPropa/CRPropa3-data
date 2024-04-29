@@ -65,8 +65,7 @@ def plot(specFile, plotFile):
     y = data[:, 1]
 
     y = np.diff(y) / np.diff(x)
-    x = 10 ** ((np.log10(x[:-1]) + np.diff(np.log10(x))) / 2.)
-    # y = np.diff(y) / np.diff(data[])
+    x = 10 ** ((np.log10(x[:-1]) + np.log10(x[1:])) / 2.)
 
     import matplotlib.pyplot as plt
     plt.figure()
