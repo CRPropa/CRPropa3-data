@@ -9,7 +9,7 @@ def synchrotron_spectrum(xval):
     """
     Calculate cumulative synchrotron spectrum.
     Follows:
-      J.~D. Jackson, Classical Electrondynamics.
+      J.~D. Jackson, Classical Electrodynamics.
       Wiley, 3rd ed., p. 681, eq. 14.91
 
     F(x) = (\int_{x}^{\infinity} K_{5/3}(x') dx') 
