@@ -24,9 +24,8 @@ def synchrotron_spectrum(xval):
     F = np.zeros(len(xval))
     for i, value in enumerate(xval):
         a = xval[i:]
-        F[i] = integrate.trapz(x = a, y = kv(5. / 3., a))
-    for i,value in enumerate(xval):
-        b = integrate.cumtrapz(x = xval, y = xval * F, initial = 0)
+        F[i] = integrate.trapezoid(x = a, y = kv(5. / 3., a))
+    b = integrate.cumulative_trapezoid(x = xval, y = xval * F, initial = 0)
     return b / b[-1]
 
 
