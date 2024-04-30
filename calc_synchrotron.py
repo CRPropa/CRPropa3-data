@@ -9,7 +9,7 @@ def synchrotron_spectrum(xval):
     """
     Calculate cumulative synchrotron spectrum.
     Follows:
-      J.~D. Jackson, Classical Electrondynamics.
+      J.~D. Jackson, Classical Electrodynamics.
       Wiley, 3rd ed., p. 681, eq. 14.91
 
     F(x) = (\int_{x}^{\infinity} K_{5/3}(x') dx') 
@@ -24,9 +24,8 @@ def synchrotron_spectrum(xval):
     F = np.zeros(len(xval))
     for i, value in enumerate(xval):
         a = xval[i:]
-        F[i] = integrate.trapz(x = a, y = kv(5. / 3., a))
-    for i,value in enumerate(xval):
-        b = integrate.cumtrapz(x = xval, y = xval * F, initial = 0)
+        F[i] = integrate.trapezoid(x = a, y = kv(5. / 3., a))
+    b = integrate.cumulative_trapezoid(x = xval, y = xval * F, initial = 0)
     return b / b[-1]
 
 
@@ -66,8 +65,7 @@ def plot(specFile, plotFile):
     y = data[:, 1]
 
     y = np.diff(y) / np.diff(x)
-    x = 10 ** ((np.log10(x[:-1]) + np.diff(np.log10(x))) / 2.)
-    # y = np.diff(y) / np.diff(data[])
+    x = 10 ** ((np.log10(x[:-1]) + np.log10(x[1:])) / 2.)
 
     import matplotlib.pyplot as plt
     plt.figure()
