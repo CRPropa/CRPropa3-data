@@ -432,7 +432,7 @@ class EBL_Stecker16(EBL):
 
         d_t = d.T
         eps_eV = eps / eV # [eV]
-        nu = eps / c_light  # [Hz]
+        nu = eps / h_planck  # [Hz]
         self.photonDensity = []
         self.energy = []
         for i, dens in enumerate(d_t):
