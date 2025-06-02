@@ -97,7 +97,7 @@ def processRate(field):
     
     np.savetxt(
         folder + '/rate_%s_superheavy.txt' % field.name,
-        np.r_[np.c_[d1sum['Z'], d1sum['N'], R1], np.c_[d2sum['Z'], d2sum['N'], R2], np.c_[d4sum['Z'], d4sum['N'], R4]],
+        np.r_[np.c_[d4sum['Z'], d4sum['N'], R4]],
         fmt='%i\t%i' + '\t%.9g' * 201,
         header=header)
 
@@ -134,7 +134,7 @@ def processRate(field):
 
     np.savetxt(
         folder + '/branching_%s_superheavy.txt' % field.name,
-        np.r_[np.c_[d1exc['Z'], d1exc['N'], d1exc['ch'], B1], np.c_[d2exc['Z'], d2exc['N'], d2exc['ch'], B2], np.c_[d4exc['Z'], d4exc['N'], d4exc['ch'], B4]],
+        np.r_[np.c_[d4exc['Z'], d4exc['N'], d4exc['ch'], B4]],
         fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
         header=header)
 
