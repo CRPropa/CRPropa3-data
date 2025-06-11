@@ -42,6 +42,20 @@ xs2exc = np.array([interactionRate.romb_pad_zero(x, 513) for x in d2exc['xs']]) 
 
 
 # ----------------------------------------------------
+# Load cross sections for A >= 56 (TALYS)
+# ----------------------------------------------------
+ddir4 = os.path.join(cdir, 'tables/PD_Talys1.9/')
+isotopes4 = np.genfromtxt(ddir4 + 'isotopes.txt')
+eps4 = np.genfromtxt(ddir4 + 'eps.txt')
+d4sum = np.genfromtxt(ddir4 + 'xs_pd_sum.txt', dtype=[('Z', int), ('N', int), ('xs', '%if8' % len(eps))])
+d4exc = np.genfromtxt(ddir4 + 'xs_pd_thin.txt', dtype=[('Z', int), ('N', int), ('ch', int), ('xs', '%if8' % len(eps))])
+# Pad cross sections to next larger 2^n + 1 tabulation points for Romberg integration and convert to SI units
+eps4 = interactionRate.romb_pad_logspaced(eps4, 513) * eV * 1e6
+xs4sum = np.array([interactionRate.romb_pad_zero(x, 513) for x in d4sum['xs']]) * 1e-31
+xs4exc = np.array([interactionRate.romb_pad_zero(x, 513) for x in d4exc['xs']]) * 1e-31
+
+
+# ----------------------------------------------------
 # Load cross sections with photon emission
 # ----------------------------------------------------
 d3sum = np.genfromtxt(ddir2 + 'xs_photon_sum.txt', dtype=[('Z', int), ('N', int), ('Zd', int), ('Nd', int), ('xs', '%if8' % len(eps))])
@@ -65,6 +79,7 @@ def processRate(field):
     # Calculate total interaction rates
     R1 = np.array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1sum])
     R2 = np.array([interactionRate.calc_rate_eps(eps2, x, gamma, field) for x in xs2sum])
+    R4 = np.array([interactionRate.calc_rate_eps(eps4, x, gamma, field) for x in xs4sum])
     
     try:
         git_hash = gh.get_git_revision_hash()
@@ -79,18 +94,29 @@ def processRate(field):
         np.r_[np.c_[d1sum['Z'], d1sum['N'], R1], np.c_[d2sum['Z'], d2sum['N'], R2]],
         fmt='%i\t%i' + '\t%.9g' * 201,
         header=header)
+    
+    np.savetxt(
+        folder + '/rate_%s_superheavy.txt' % field.name,
+        np.r_[np.c_[d4sum['Z'], d4sum['N'], R4]],
+        fmt='%i\t%i' + '\t%.9g' * 201,
+        header=header)
 
     # Calculate branching ratios from exclusive interaction rates
     B1 = np.array([interactionRate.calc_rate_eps(eps1, x, gamma, field) for x in xs1exc])
     B2 = np.array([interactionRate.calc_rate_eps(eps2, x, gamma, field) for x in xs2exc])
+    B4 = np.array([interactionRate.calc_rate_eps(eps4, x, gamma, field) for x in xs4exc])
     for (Z, N, A) in isotopes1:
         s = (d1exc['Z'] == Z) * (d1exc['N'] == N)
         B1[s] /= np.sum(B1[s], axis=0)
     for (Z, N, A) in isotopes2:
         s = (d2exc['Z'] == Z) * (d2exc['N'] == N)
         B2[s] /= np.sum(B2[s], axis=0)
+    for (Z, N, A) in isotopes4:
+        s = (d4exc['Z'] == Z) * (d4exc['N'] == N)
+        B4[s] /= np.sum(B4[s], axis=0)
     B1 = np.nan_to_num(B1)  # set to 0 when total cross section is 0
     B2 = np.nan_to_num(B2)
+    B4 = np.nan_to_num(B4)
     
     try:
         git_hash = gh.get_git_revision_hash()
@@ -106,6 +132,11 @@ def processRate(field):
         fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
         header=header)
 
+    np.savetxt(
+        folder + '/branching_%s_superheavy.txt' % field.name,
+        np.r_[np.c_[d4exc['Z'], d4exc['N'], d4exc['ch'], B4]],
+        fmt='%i\t%i\t%06d' + '\t%.9g' * 201,
+        header=header)
 
 
 # ----------------------------------------------------
