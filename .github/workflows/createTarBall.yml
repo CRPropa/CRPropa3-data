@@ -19,6 +19,8 @@ jobs:
     # Checkout the repository
     - name: Checkout repository
       uses: actions/checkout@v7
+      with:
+        submodules: true
     # Python set up
     - name: Preinstall
       uses: actions/setup-python@v6

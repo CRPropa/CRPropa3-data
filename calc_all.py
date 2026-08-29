@@ -1,3 +1,4 @@
+import os
 import time
 import subprocess
 import photonField
@@ -172,7 +173,7 @@ def photon_fields(fields: list):
 
 def photopion_production(fields: list):
     """Creates photo pion production tables
-    
+
     Input
         fields: list of photonField class instances
     """
@@ -185,6 +186,27 @@ def photopion_production(fields: list):
         ppp.process(field)
     t2 = time.time()
     print("\nPhoto pion production tables generated in {} seconds.".format(round(t2-t1, 2)))
+    print("#"*50+"\n")
+
+def empirical_photopion():
+    """Generates the three field-independent tables for PhotoPionProductionEmpirical.
+
+    Unlike PhotoPionProduction, these tables are independent of the photon field:
+    the module builds the interaction rate at construction from the photon field itself.
+    See DATA_GENERATION.txt and dataGeneration/PhotoPionProductionEmpirical/export_tables.py.
+    """
+    import subprocess
+    import sys as _sys
+
+    print("#"*50)
+    print("Generate PhotoPionProductionEmpirical tables.\n")
+    t1 = time.time()
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          "dataGeneration/PhotoPionProductionEmpirical/export_tables.py")
+    subprocess.run([_sys.executable, script,
+                    "--out", "data/PhotoPionProductionEmpirical"], check=True)
+    t2 = time.time()
+    print("\nEmpirical photopion tables generated in {} seconds.".format(round(t2-t1, 2)))
     print("#"*50+"\n")
 
 def synchrotron():
@@ -262,9 +284,10 @@ def createCRPropaDefault():
     photo_disintegration(fields_cmbebl+fields_urb, reduced_fields)
     photon_fields(fields_cmbebl+fields_urb)
     photopion_production(fields_cmbebl+fields_urb)
+    empirical_photopion()
     synchrotron()
     compress()
-    calc_checksum() 
+    calc_checksum()
 
 
 if __name__ == "__main__":

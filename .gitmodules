@@ -1,0 +1,3 @@
+[submodule "lib/AstroPhoMes"]
+	path = lib/AstroPhoMes
+	url = https://github.com/mohller/AstroPhoMes.git
